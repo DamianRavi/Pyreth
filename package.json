@@ -1,0 +1,23 @@
+{
+  "name": "pyreth",
+  "version": "1.0.0",
+  "description": "A web3 interface for pyrebrowser.com",
+  "main": "./index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "exports": {
+    "import": "./index.js",
+    "require": "./dist/index.js"
+  },
+  "author": "DamianRavi",
+  "license": "ISC",
+  "dependencies": {
+    "@noble/curves": "^1.4.0",
+    "@noble/hashes": "^1.4.0",
+    "@scure/base": "^1.1.6",
+    "@subsquid/ss58": "^2.0.2",
+    "bs58": "^5.0.0"
+  }
+}
