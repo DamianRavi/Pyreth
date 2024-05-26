@@ -1,6 +1,6 @@
 {
   "name": "pyreth",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "A web3 interface for pyrebrowser.com",
   "main": "./index.js",
   "type": "module",
@@ -9,7 +9,7 @@
   },
   "exports": {
     "import": "./index.js",
-    "require": "./dist/index.js"
+    "require": "./dist/index.cjs"
   },
   "author": "DamianRavi",
   "license": "ISC",
