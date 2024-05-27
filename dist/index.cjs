@@ -1101,9 +1101,50 @@ const toNumber = (value) => {
 	}
 };
 
-const toWei = (value, unit = "ether") => ETHER_UNITS[unit] * BigInt(value);
+const toWei = (parsedNumber, unit = "ether") => {
+  if(!ETHER_UNITS[unit]){
+    throw new Error("Invalid Unit")
+  }
+  parsedNumber = parsedNumber.toString();
+  var denomination = BigInt(ETHER_UNITS[unit]);
+  const [integer, fraction] = parsedNumber.split('.').concat('');
 
-const fromWei = (value, unit = "ether") => (BigInt(value) / ETHER_UNITS[unit]).toString();
+  const value = BigInt(`${integer}${fraction}`);
+  const updatedValue = value * denomination;
+  const decimals = fraction.length;
+  if (decimals === 0) {
+    return updatedValue.toString();
+  }
+  return updatedValue.toString().slice(0, -decimals);
+};
+
+const fromWei = (number, unit = "ether") => {
+  if(!ETHER_UNITS[unit]){
+    throw new Error("Invalid Unit")
+  }
+  var denomination = BigInt(ETHER_UNITS[unit]);
+
+  const value = String(toNumber(number));
+  const numberOfZerosInDenomination = denomination.toString().length - 1;
+
+  if (numberOfZerosInDenomination <= 0) {
+    return value.toString();
+  }
+
+  const zeroPaddedValue = value.padStart(numberOfZerosInDenomination, '0');
+  const integer = zeroPaddedValue.slice(0, -numberOfZerosInDenomination);
+  const fraction = zeroPaddedValue.slice(-numberOfZerosInDenomination).replace(/\.?0+$/, '');
+
+  if (integer === '') {
+    return `0.${fraction}`;
+  }
+
+  if (fraction === '') {
+    return integer;
+  }
+  const updatedValue = `${integer}.${fraction}`;
+  return updatedValue.slice(0, integer.length + numberOfZerosInDenomination + 1);
+};
 
 const toChecksumAddress = (address) => {
   if (!isAddress(address)) {
