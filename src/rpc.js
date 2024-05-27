@@ -75,7 +75,7 @@ export const rpcSendAbi = async (wallet, address, method, abi, args) => {
       method: method,
       abiData: abi,
       inputs: args,
-      params: [{to: address, value: "0",...options, input: data}, "latest"]
+      params: [{to: address, from: wallet.defaultAccount, value: "0", ...options, input: data}, "latest"]
     })
   }).catch((err) => console.log(err))
   var content = await rawResponse?.json();

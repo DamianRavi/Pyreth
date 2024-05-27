@@ -27,11 +27,16 @@ class Wallet{
     this.save = () => "WIP";
     this.getStorage = () => "WIP";
   }
+
+  setDefaultAccount(address){
+    this.defaultAccount = address;
+  }
 }
 
 class Provider{
   constructor(provider){
     this.provider = provider;
+    this.url = provider;
     this.modules = {
       Eth: "Eth(provider)",
       Net: "Net(provider)",
@@ -44,6 +49,7 @@ class Provider{
 
   setProvider(newProvider) {
     this.provider = newProvider;
+    this.url = provider;
     this.getChainId()
     this.getDefaultGasPrice()
   }
@@ -67,7 +73,7 @@ class Provider{
 
 class Pyre {
   constructor(provider) {
-    this.provider = new Provider(provider)// provider ? provider : "http://localhost:8484/pyre";
+    this.provider = new Provider(provider ? provider : "http://localhost:8484/pyre")
     this.testBN = BigInt(55)
     this.wallet = new Wallet(this.provider)
     this.utils = Utils;
@@ -81,7 +87,7 @@ class Pyre {
   }
 
   connect = async (provider, options) => {
-    var rawResponse = await fetch("http://localhost:8484/pyre", {//"http://localhost:8484/pyre", {
+    var rawResponse = await fetch("http://localhost:8484/pyre", {
       method: "POST", headers: {'Accept': 'application/json', 'Content-Type': 'application/json'},
       body: JSON.stringify({ id: Utils.randomHex(16), jsonrpc: "2.0", method: "eth_enable", chain: options })
     })
@@ -89,7 +95,9 @@ class Pyre {
     if(!content){
       return {err: "RPC Not Active"}
     }
-    //set default Address here
+    if(!content.error){
+      this.wallet.setDefaultAccount(content.result)
+    }
     return(content.result)
   }
 
@@ -99,7 +107,7 @@ class Pyre {
   }
 
   send = async (address, amount, chain = null) => { //opts can include chain variable
-    var res = await rpcSend(this.wallet, "eth_sendTransaction", {to: address, value: amount, chain: chain})
+    var res = await rpcSend(this.wallet, "eth_sendTransaction", {to: address, from: this.wallet.defaultAccount, value: amount, chain: chain})
   }
 
 /*
