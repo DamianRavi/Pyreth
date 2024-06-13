@@ -4,7 +4,7 @@ import * as Dot from './src/modules/dot/index.js'
 //import * as Personal from './modules/eth/personal'
 import * as Utils from './src/modules/utils/index.js'
 import { Mail } from './src/modules/mail/index.js'
-//import { encrypt, decrypt } from "./src/hashes/ecEncrypt.js"
+import { encrypt, decrypt } from "./src/hashes/ecEncrypt.js"
 import { rpcSendAbi, rpcSend } from './src/rpc.js'
 import { createSS58, privateKeyToAccount, create } from "./src/encoders.js"
 
@@ -84,6 +84,8 @@ class Pyre {
     this.pay = this.mail.pay;
     this.payToken = this.mail.payToken;
     //this.quote = quote;
+    this.encrypt = encrypt;
+    this.decrypt = decrypt;
   }
 
   connect = async (provider, options) => {

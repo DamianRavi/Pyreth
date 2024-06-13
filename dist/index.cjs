@@ -2,8 +2,8 @@
 
 var utils = require('@noble/hashes/utils');
 var sha3$1 = require('@noble/hashes/sha3');
-var Buffer = require('buffer');
-var crypto = require('crypto');
+var buffer = require('buffer');
+var crypto = require('crypto-js');
 var secp256k1 = require('@noble/curves/secp256k1');
 var scrypt = require('@noble/hashes/scrypt');
 require('@noble/hashes/crypto');
@@ -12,6 +12,7 @@ require('@noble/hashes/blake2b');
 require('@noble/hashes/blake2s');
 require('@scure/base');
 require('@noble/hashes/pbkdf2');
+var sha512 = require('@noble/hashes/sha512');
 
 function _interopNamespaceDefault(e) {
   var n = Object.create(null);
@@ -1747,8 +1748,8 @@ function isDynamic$1(param) {
 
 
 function alloc(size = 0) {
-	if (Buffer?.alloc !== undefined) {
-		const buf = Buffer.alloc(size);
+	if (buffer.Buffer?.alloc !== undefined) {
+		const buf = buffer.Buffer.alloc(size);
 		return new Uint8Array(buf.buffer, buf.byteOffset, buf.byteLength);
 	}
 
@@ -4028,7 +4029,7 @@ async function getBrowserKey(mode, key, iv) {
   return [wKey, { name: `aes-${keyMode}`, iv, counter: iv, length: 128 }];
 }
 
-async function encrypt$1( msg, key, iv, mode = "aes-128-ctr", pkcs7PaddingEnabled = true) {
+async function encrypt$2( msg, key, iv, mode = "aes-128-ctr", pkcs7PaddingEnabled = true) {
   validateOpt(key, iv, mode);
   if (crypto.web) {
     const [wKey, wOpt] = await getBrowserKey(mode, key, iv);
@@ -4054,11 +4055,11 @@ async function getPadding(cypherText, key, iv, mode) {
     // Undo xor of iv and fill with lastBlock ^ padding (16)
     lastBlock[i] ^= iv[i] ^ 16;
   }
-  const res = await encrypt$1(lastBlock, key, iv, mode);
+  const res = await encrypt$2(lastBlock, key, iv, mode);
   return res.slice(0, 16);
 }
 
-async function decrypt$1(cypherText, key, iv, mode = "aes-128-ctr", pkcs7PaddingEnabled = true) {
+async function decrypt$2(cypherText, key, iv, mode = "aes-128-ctr", pkcs7PaddingEnabled = true) {
   validateOpt(key, iv, mode);
   if (crypto.web) {
     const [wKey, wOpt] = await getBrowserKey(mode, key, iv);
@@ -4071,7 +4072,7 @@ async function decrypt$1(cypherText, key, iv, mode = "aes-128-ctr", pkcs7Padding
     const msgBytes = new Uint8Array(msg);
     // Safari always ignores padding (if no padding -> broken message)
     if (wOpt.name === "aes-cbc") {
-      const encrypted = await encrypt$1(msgBytes, key, iv, mode);
+      const encrypted = await encrypt$2(msgBytes, key, iv, mode);
       if (!equalsBytes(encrypted, cypherText)) {
         throw new Error("AES: wrong padding");
       }
@@ -4104,8 +4105,11 @@ const createSS58 = (pubKey) => {
   //var enc = new TextDecoder("utf-8");
   //var arr = new Uint8Array([84,104,105,115,32,105,115,32,97,32,85,105,110,116, 56,65,114,114,97,121,32,99,111,110,118,101,114,116, 101,100,32,116,111,32,97,32,115,116,114,105,110,103]);
   //console.log(enc.decode(h10c));
+
+
   var h10c = ss58__namespace.codec(0).encode(hexToBytes$1(pubKey.replace("0x", "")));
   return h10c
+  //return "Unimplemented"
 };
 
 
@@ -4193,7 +4197,7 @@ const privateKeyToAccount = (privateKey, ignoreLength) => {
       throw new Error('Do not have network access to sign the transaction');
     },
     sign: (data) => sign$1(typeof data === 'string' ? data : JSON.stringify(data), privateKeyUint8Array),
-    encrypt: async (password, options) => encrypt(privateKeyUint8Array, password, options),
+    encrypt: async (password, options) => encrypt$1(privateKeyUint8Array, password, options),
   };
 };
 
@@ -4212,7 +4216,7 @@ const privateKeyToPublicKey = (privateKey, isCompressed) => {
   return `0x${bytesToHex$1(secp256k1.secp256k1.getPublicKey(privateKeyUint8Array, isCompressed)).slice(4)}`; // 0x and removing compression byte
 };
 
-const decrypt = async (keystore, password, nonStrict) => {
+const decrypt$1 = async (keystore, password, nonStrict) => {
   const json = typeof keystore === 'object' ? keystore : (JSON.parse(nonStrict ? keystore.toLowerCase() : keystore));
   //validator.validateJSONSchema(keyStoreSchema, json);
 
@@ -4247,12 +4251,12 @@ const decrypt = async (keystore, password, nonStrict) => {
     throw new KeyDerivationError();
   }
 
-  const seed = await decrypt$1( hexToBytes$1(json.crypto.ciphertext), derivedKey.slice(0, 16), hexToBytes$1(json.crypto.cipherparams.iv) );
+  const seed = await decrypt$2( hexToBytes$1(json.crypto.ciphertext), derivedKey.slice(0, 16), hexToBytes$1(json.crypto.cipherparams.iv) );
 
   return privateKeyToAccount(seed);
 };
 
-const encrypt = async (privateKey,	password,	options = undefined) => {
+const encrypt$1 = async (privateKey,	password,	options = undefined) => {
   const privateKeyUint8Array = parseAndValidatePrivateKey(privateKey);
 
     // if given salt or iv is a string, convert it to a Uint8Array
@@ -4319,7 +4323,7 @@ const encrypt = async (privateKey,	password,	options = undefined) => {
       throw new InvalidKdfError();
     }
 
-    const cipher = await encrypt$1( privateKeyUint8Array, derivedKey.slice(0, 16), initializationVector, 'aes-128-ctr' );
+    const cipher = await encrypt$2( privateKeyUint8Array, derivedKey.slice(0, 16), initializationVector, 'aes-128-ctr' );
 
     const ciphertext = bytesToHex$1(cipher).slice(2);
 
@@ -4650,9 +4654,9 @@ class Accounts{
 
 	parseAndValidatePrivateKey = (privateKey) => parseAndValidatePrivateKey(privateKey);
 
-	decrypt = async (keystore, password, nonStrict) => await decrypt(keystore, password, nonStrict)
+	decrypt = async (keystore, password, nonStrict) => await decrypt$1(keystore, password, nonStrict)
 
-	encrypt = async (privateKey,	password,	options = undefined) => await encrypt(privateKey,	password,	options)
+	encrypt = async (privateKey,	password,	options = undefined) => await encrypt$1(privateKey,	password,	options)
 
 	hashMessage = (message) => hashMessage(message)
 
@@ -5043,6 +5047,118 @@ class Mail {
 
 }
 
+const EC_GROUP_ORDER = buffer.Buffer.from('fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141', 'hex');
+const ZERO32 = buffer.Buffer.alloc(32, 0);
+
+function assert(condition, message) {
+  if (!condition) {
+    throw new Error(message || "Assertion failed");
+  }
+}
+
+function isScalar (x) {
+  return buffer.Buffer.isBuffer(x) && x.length === 32;
+}
+
+function equalConstTime(b1, b2) {
+  if (b1.length !== b2.length) {
+    return false;
+  }
+  var res = 0;
+  for (var i = 0; i < b1.length; i++) {
+    res |= b1[i] ^ b2[i];  // jshint ignore:line
+  }
+  return res === 0;
+}
+
+function isValidPrivateKey(privateKey) {
+  if (!isScalar(privateKey))
+  {
+    return false;
+  }
+  return privateKey.compare(ZERO32) > 0 && // > 0
+  privateKey.compare(EC_GROUP_ORDER) < 0; // < G
+}
+
+function hmacSha256(key, msg) {
+  return crypto.createHmac("sha256", key).update(msg).digest();
+}
+
+function aes256CbcDecrypt(iv, key, ciphertext) {
+  var cipher = crypto.createDecipheriv("aes-256-cbc", key, iv);
+  var firstChunk = cipher.update(ciphertext);
+  var secondChunk = cipher.final();
+  return buffer.Buffer.concat([firstChunk, secondChunk]);
+}
+
+function getPublic(privateKey) {
+  //assert(privateKey.length === 32, "Bad private key");
+  //assert(isValidPrivateKey(privateKey), "Bad private key");
+  //var compressed = secp256k1.publicKeyCreate(privateKey);
+  return secp256k1.secp256k1.getPublicKey(privateKey, false);
+}
+const derive = (privateKeyA, publicKeyB) => {
+  return new Promise(function(resolve) {
+    //assert(privateKeyA.length === 32, "Bad private key");
+    //assert(isValidPrivateKey(privateKeyA), "Bad private key");
+    //resolve(ecdh.derive(privateKeyA, publicKeyB));
+    console.log(privateKeyA, publicKeyB);
+    resolve(secp256k1.secp256k1.getSharedSecret(privateKeyA, publicKeyB));
+  });
+};
+
+const encrypt = (publicKeyTo, msg, opts) => {
+  opts = opts || {};
+  // Tmp variable to save context from flat promises;
+  var ephemPublicKey;
+  return new Promise(function(resolve) {
+    //secp256k1.getPublicKey(secp256k1.utils.randomPrivateKey())
+    var ephemPrivateKey = opts.ephemPrivateKey || secp256k1.secp256k1.utils.randomPrivateKey();//Buffer.from(randomBytes(32));
+    publicKeyTo = (getPublic("815ce989663d4efbc7564b4da3fe147097847fc8667de260563f54aae4a87101"));
+    //uint8ArrayToHexString
+    /*
+    if(!isValidPrivateKey(ephemPrivateKey)){
+      console.log("INVALID KEY")
+      return "INVALID KEY"
+    }
+    while(!isValidPrivateKey(ephemPrivateKey)) {
+      ephemPrivateKey = opts.ephemPrivateKey || secp256k1.utils.randomPrivateKey()//Buffer.from(randomBytes(32));
+    }*/
+    ephemPublicKey = getPublic(ephemPrivateKey);
+    resolve(derive(ephemPrivateKey, publicKeyTo));
+  }).then(function(Px) {
+    var hash = sha512.sha512(Px);
+    console.log(hash);
+    var iv = opts.iv || buffer.Buffer.from(utils.randomBytes(16));
+    var encryptionKey = hash.slice(0, 32);
+    var macKey = hash.slice(32);
+    console.log(msg);
+    var ciphertext = crypto.AES.encrypt(msg, encryptionKey, { iv: iv });//aes256CbcEncrypt(iv, encryptionKey, msg);
+    console.log(iv, ephemPublicKey, ciphertext);
+    var dataToMac = buffer.Buffer.concat([iv, ephemPublicKey, ciphertext]);
+    //var mac = Buffer.from(hmacSha256(macKey, dataToMac));
+    let mac = crypto.algo.HMAC.create(crypto.algo.SHA256, macKey);
+    mac.update(dataToMac);
+    mac.finalize();
+    mac = crypto.enc.Hex.stringify(mac);
+
+    return { iv: iv, ephemPublicKey: ephemPublicKey, ciphertext: ciphertext, mac: mac };
+  });
+};
+
+const decrypt = (privateKey, opts) => {
+  return derive(privateKey, opts.ephemPublicKey).then(function(Px) {
+    assert(privateKey.length === 32, "Bad private key");
+    assert(isValidPrivateKey(privateKey), "Bad private key");
+    var hash = sha512.sha512(Px);
+    var encryptionKey = hash.slice(0, 32);
+    var macKey = hash.slice(32);
+    var dataToMac = buffer.Buffer.concat([ opts.iv, opts.ephemPublicKey, opts.ciphertext]);
+    var realMac = hmacSha256(macKey, dataToMac);
+    assert(equalConstTime(opts.mac, realMac), "Bad MAC"); return aes256CbcDecrypt(opts.iv, encryptionKey, opts.ciphertext);
+  });
+};
+
 const onChange = (provider, options) => {
 
 };
@@ -5119,6 +5235,8 @@ class Pyre {
     this.pay = this.mail.pay;
     this.payToken = this.mail.payToken;
     //this.quote = quote;
+    this.encrypt = encrypt;
+    this.decrypt = decrypt;
   }
 
   connect = async (provider, options) => {

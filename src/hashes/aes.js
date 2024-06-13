@@ -1,5 +1,5 @@
 import { crypto as cr } from "@noble/hashes/crypto";
-import crypto from "crypto";
+import crypto from "crypto-js";
 
 function isBytes(a) {
   return (

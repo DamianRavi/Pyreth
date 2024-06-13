@@ -1,7 +1,7 @@
-/*
 import crypto from "crypto-js";
 import { randomBytes } from "@noble/hashes/utils";
-import * as secp256k1 from '@noble/secp256k1'
+//import * as secp256k1 from '@noble/secp256k1'
+import { secp256k1 } from '@noble/curves/secp256k1'
 import { sha512 } from '@noble/hashes/sha512'
 import { Buffer } from 'buffer';
 
@@ -137,4 +137,3 @@ export const decrypt = (privateKey, opts) => {
     assert(equalConstTime(opts.mac, realMac), "Bad MAC"); return aes256CbcDecrypt(opts.iv, encryptionKey, opts.ciphertext);
   });
 };
-*/

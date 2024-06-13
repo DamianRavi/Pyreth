@@ -1,4 +1,4 @@
-import { getRandomValues } from "crypto"
+import { getRandomValues } from "crypto-js"
 //import { subtle } from "crypto"//.webcrypto;
 import TransactionFactory from './modules/eth/accounts/TransactionFactory.js'
 import { randomBytes as _randomBytes } from '@noble/hashes/utils';
@@ -35,8 +35,11 @@ export const createSS58 = (pubKey) => {
   //var enc = new TextDecoder("utf-8");
   //var arr = new Uint8Array([84,104,105,115,32,105,115,32,97,32,85,105,110,116, 56,65,114,114,97,121,32,99,111,110,118,101,114,116, 101,100,32,116,111,32,97,32,115,116,114,105,110,103]);
   //console.log(enc.decode(h10c));
+
+
   var h10c = ss58.codec(0).encode(hexToBytes(pubKey.replace("0x", "")))
   return h10c
+  //return "Unimplemented"
 }
 
 

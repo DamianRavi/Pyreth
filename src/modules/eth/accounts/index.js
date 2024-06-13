@@ -8,7 +8,6 @@ import { create as _create, decrypt as _decrypt, encrypt as _encrypt, sign as _s
 				 parseAndValidatePrivateKey as _parseAndValidatePrivateKey, randomBytes, uuidV4, createSS58 } from '../../../encoders.js'
 import { sha3Raw } from '../../../hashes.js'
 import { scrypt as scryptSync } from '@noble/hashes/scrypt'
-import { decrypt as createDecipheriv, encrypt as createCipheriv } from '../../../hashes/aes.js';
 import { pbkdf2 as pbkdf2Sync } from '@noble/hashes/pbkdf2';
 import TransactionFactory from './TransactionFactory.js'
 import {Transaction} from './LegacyTransaction.js'

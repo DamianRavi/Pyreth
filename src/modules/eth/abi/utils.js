@@ -1,7 +1,7 @@
 import { utf8ToBytes, hexToUtf8, bytesToUint8Array, bytesToHex, uint8ArrayToBigInt, uint8ArrayConcat, bigIntToUint8Array, hexToUint8Array, uint8ArrayToHexString, toNumber } from '../../../converter.js'
 import { isBytes, isAddress, isHexStrict } from '../../../validator.js'
 import { toChecksumAddress } from '../../../converter.js'
-import Buffer from 'buffer'
+import { Buffer } from 'buffer'
 const MAX_STATIC_BYTES_COUNT = 32;
 const ADDRESS_BYTES_COUNT = 20;
 const WORD_SIZE = 32;
