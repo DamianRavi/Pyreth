@@ -11,7 +11,7 @@ import { sha3Raw } from './hashes.js'
 import { keccak_256 as keccak256 } from '@noble/hashes/sha3';
 import { scrypt as scryptSync } from '@noble/hashes/scrypt'
 import { decrypt as createDecipheriv, encrypt as createCipheriv } from './hashes/aes.js';
-import * as ss58 from "@subsquid/ss58";//import { encodeAddress } from "@polkadot/util-crypto";
+//import * as ss58 from "@subsquid/ss58";//import { encodeAddress } from "@polkadot/util-crypto";
 import { blake2b } from '@noble/hashes/blake2b';
 import { blake2s } from '@noble/hashes/blake2s';
 import { base58 } from '@scure/base';
@@ -37,9 +37,9 @@ export const createSS58 = (pubKey) => {
   //console.log(enc.decode(h10c));
 
 
-  var h10c = ss58.codec(0).encode(hexToBytes(pubKey.replace("0x", "")))
-  return h10c
-  //return "Unimplemented"
+  //var h10c = ss58.codec(0).encode(hexToBytes(pubKey.replace("0x", "")))
+  //return h10c
+  return "Unimplemented"
 }
 
 

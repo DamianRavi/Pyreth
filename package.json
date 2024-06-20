@@ -1,6 +1,6 @@
 {
   "name": "pyreth",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "A web3 interface for pyrebrowser.com",
   "main": "./index.js",
   "type": "module",
@@ -17,7 +17,6 @@
     "@noble/curves": "^1.4.0",
     "@noble/hashes": "^1.4.0",
     "@scure/base": "^1.1.6",
-    "@subsquid/ss58": "^2.0.2",
     "assert": "^2.1.0",
     "bs58": "^5.0.0",
     "buffer": "^6.0.3",

@@ -7,31 +7,11 @@ var crypto = require('crypto-js');
 var secp256k1 = require('@noble/curves/secp256k1');
 var scrypt = require('@noble/hashes/scrypt');
 require('@noble/hashes/crypto');
-var ss58 = require('@subsquid/ss58');
 require('@noble/hashes/blake2b');
 require('@noble/hashes/blake2s');
 require('@scure/base');
 require('@noble/hashes/pbkdf2');
 var sha512 = require('@noble/hashes/sha512');
-
-function _interopNamespaceDefault(e) {
-  var n = Object.create(null);
-  if (e) {
-    Object.keys(e).forEach(function (k) {
-      if (k !== 'default') {
-        var d = Object.getOwnPropertyDescriptor(e, k);
-        Object.defineProperty(n, k, d.get ? d : {
-          enumerable: true,
-          get: function () { return e[k]; }
-        });
-      }
-    });
-  }
-  n.default = e;
-  return Object.freeze(n);
-}
-
-var ss58__namespace = /*#__PURE__*/_interopNamespaceDefault(ss58);
 
 class BaseError extends Error {
 
@@ -4107,9 +4087,9 @@ const createSS58 = (pubKey) => {
   //console.log(enc.decode(h10c));
 
 
-  var h10c = ss58__namespace.codec(0).encode(hexToBytes$1(pubKey.replace("0x", "")));
-  return h10c
-  //return "Unimplemented"
+  //var h10c = ss58.codec(0).encode(hexToBytes(pubKey.replace("0x", "")))
+  //return h10c
+  return "Unimplemented"
 };
 
 
@@ -4187,7 +4167,7 @@ const privateKeyToAccount = (privateKey, ignoreLength) => {
   const privateKeyUint8Array = parseAndValidatePrivateKey(privateKey, ignoreLength);
 
   var pubKey = privateKeyToPublicKey(privateKeyUint8Array);
-  var dotAddress = createSS58(pubKey);
+  var dotAddress = createSS58();
   return {
     address: privateKeyToAddress(privateKeyUint8Array),
     ss58Address: dotAddress,
@@ -5257,6 +5237,12 @@ class Pyre {
   setProvider = (newProvider, options) => {
     this.provider.setProvider(newProvider);
     //this.eth.Contract.setProvider(newProvider);
+  }
+
+  request = async (data) => {
+    if(data.method == "eth_requestAccounts"){
+      return await connect();
+    }
   }
 
   send = async (address, amount, chain = null) => { //opts can include chain variable
