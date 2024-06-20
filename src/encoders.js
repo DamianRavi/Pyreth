@@ -12,6 +12,7 @@ import { keccak_256 as keccak256 } from '@noble/hashes/sha3';
 import { scrypt as scryptSync } from '@noble/hashes/scrypt'
 import { decrypt as createDecipheriv, encrypt as createCipheriv } from './hashes/aes.js';
 //import * as ss58 from "@subsquid/ss58";//import { encodeAddress } from "@polkadot/util-crypto";
+import { encode, decode } from './hashes/ss58.js'
 import { blake2b } from '@noble/hashes/blake2b';
 import { blake2s } from '@noble/hashes/blake2s';
 import { base58 } from '@scure/base';
@@ -22,31 +23,14 @@ export const randomHex = (bytesLength) => bytesToHex( _randomBytes(new Uint8Arra
 export const randomBytes = (bytesLength) => _randomBytes(new Uint8Array(bytesLength));
 
 export const createSS58 = (pubKey) => {
-  //const config = { chars: '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz', coder: base58, ipfs: 'z', type: 'base58' };
-  //var testKey = "0x46ebddef8cd9bb167dc30878d7113b7e168e6f0646beffd77d69d39bad76b47a"
-  //testKey = hexToUint8Array(testKey)
-  //var res = base58.decode(testKey)
-  //return res;
-
-  //const message = u8aConcat('evm:', testKey);
-  //const salt = randomBytes(8);
-  //12bzRJfh7arnnfPPUZHeJUaE62QLEwhK48QnH9LXeK2m1iZU
-  //const h10c = blake2b.create({ dkLen: 32 }).update(testKey).digest();
-  //var enc = new TextDecoder("utf-8");
-  //var arr = new Uint8Array([84,104,105,115,32,105,115,32,97,32,85,105,110,116, 56,65,114,114,97,121,32,99,111,110,118,101,114,116, 101,100,32,116,111,32,97,32,115,116,114,105,110,103]);
-  //console.log(enc.decode(h10c));
-
-
-  //var h10c = ss58.codec(0).encode(hexToBytes(pubKey.replace("0x", "")))
-  //return h10c
-  return "Unimplemented"
+  return encode(pubKey.replace("0x", ""))
 }
 
 
 
 export const uuidV4 = () => {
   return "10000000-1000-4000-8000-100000000000".replace(/[018]/g, c =>
-    (c ^ getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+    (c ^ _randomBytes(1)[0] & 15 >> c / 4).toString(16)
   );
 }
 
