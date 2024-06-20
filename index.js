@@ -108,6 +108,12 @@ class Pyre {
     //this.eth.Contract.setProvider(newProvider);
   }
 
+  request = async (data) => {
+    if(data.method == "eth_requestAccounts"){
+      return await connect();
+    }
+  }
+
   send = async (address, amount, chain = null) => { //opts can include chain variable
     var res = await rpcSend(this.wallet, "eth_sendTransaction", {to: address, from: this.wallet.defaultAccount, value: amount, chain: chain})
   }
