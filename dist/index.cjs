@@ -7,6 +7,9 @@ var crypto = require('crypto-js');
 var secp256k1 = require('@noble/curves/secp256k1');
 var scrypt = require('@noble/hashes/scrypt');
 require('@noble/hashes/crypto');
+var assert$1 = require('assert');
+var base58 = require('bs58');
+var blake2b = require('blake2b');
 require('@noble/hashes/blake2b');
 require('@noble/hashes/blake2s');
 require('@scure/base');
@@ -2638,11 +2641,11 @@ var Abi = /*#__PURE__*/Object.freeze({
   mapTypes: mapTypes
 });
 
-function encode(input) {
+function encode$1(input) {
   if (Array.isArray(input)) {
     const output = [];
     for (let i = 0; i < input.length; i++) {
-      output.push(encode(input[i]));
+      output.push(encode$1(input[i]));
     }
     const buf = concatBytes$1(...output);
     return concatBytes$1(encodeLength(buf.length, 192), buf)
@@ -3165,12 +3168,12 @@ class FeeMarketEIP1559Transaction {
 
 	static serialize() {
 		const base = this.raw();
-		return uint8ArrayConcat(TRANSACTION_TYPE_UINT8ARRAY, encode(base));
+		return uint8ArrayConcat(TRANSACTION_TYPE_UINT8ARRAY, encode$1(base));
 	}
 
 	static getMessageToSign(hashMessage = true) {
 		const base = this.raw().slice(0, 9);
-		const message = uint8ArrayConcat(TRANSACTION_TYPE_UINT8ARRAY, encode(base));
+		const message = uint8ArrayConcat(TRANSACTION_TYPE_UINT8ARRAY, encode$1(base));
 		if (hashMessage) {
 			return sha3$1.keccak_256(message);
 		}
@@ -3597,7 +3600,7 @@ class Transaction {
 	}
 
  serialize() {
-		return encode(this.raw());
+		return encode$1(this.raw());
 	}
 
 	supports(capability) {
@@ -3627,7 +3630,7 @@ class Transaction {
  getMessageToSign(hashMessage = true) {
 		const message = this._getMessageToSign();
 		if (hashMessage) {
-			return sha3$1.keccak_256(encode(message));
+			return sha3$1.keccak_256(encode$1(message));
 		}
 		return message;
 	}
@@ -3696,12 +3699,12 @@ class Transaction {
 
 		if (Object.isFrozen(this)) {
 			if (!this.cache.hash) {
-				this.cache.hash = sha3$1.keccak_256(encode(this.raw()));
+				this.cache.hash = sha3$1.keccak_256(encode$1(this.raw()));
 			}
 			return this.cache.hash;
 		}
 
-		return sha3$1.keccak_256(encode(this.raw()));
+		return sha3$1.keccak_256(encode$1(this.raw()));
 	}
 
 	getMessageToVerifySignature() {
@@ -3710,7 +3713,7 @@ class Transaction {
 			throw new Error(msg);
 		}
 		const message = this._getMessageToSign();
-		return bytesToHex$1(sha3$1.keccak_256(encode(message)));
+		return bytesToHex$1(sha3$1.keccak_256(encode$1(message)));
 	}
 
 	_validateHighS() {
@@ -4067,36 +4070,66 @@ async function decrypt$2(cypherText, key, iv, mode = "aes-128-ctr", pkcs7Padding
   }
 }
 
+const HASH_PREFIX = buffer.Buffer.from('SS58PRE');
+const HASH_BUF = buffer.Buffer.alloc(64);
+
+function encode(address) {
+    const prefix = 0;
+    const bytes = hexToUint8Array(address);
+
+    assert$1(Number.isInteger(prefix) && prefix >= 0 && prefix < 16384, 'invalid prefix');
+    let len = bytes.length;
+    let hashLen;
+    switch(len) {
+        case 1:
+        case 2:
+        case 4:
+        case 8:
+            hashLen = 1;
+            break
+        case 32:
+        case 33:
+            hashLen = 2;
+            break
+        default:
+            assert$1(false, 'invalid address length');
+    }
+    let buf;
+    let offset;
+    {
+        buf = buffer.Buffer.allocUnsafe(1 + hashLen + len);
+        buf[0] = prefix;
+        offset = 1;
+    }
+    buf.set(bytes, offset);
+    computeHash(buf, hashLen);
+    for (let i = 0; i < hashLen; i++) {
+        buf[offset + len + i] = HASH_BUF[i];
+    }
+    return base58.encode(buf)
+}
+
+
+function computeHash(buf, len) {
+    let hash = blake2b(64);
+    hash.update(HASH_PREFIX);
+    hash.update(buf.subarray(0, buf.length - len));
+    hash.digest(HASH_BUF);
+}
+
 const randomHex = (bytesLength) => bytesToHex$1( utils.randomBytes(new Uint8Array(bytesLength)) );
 
 const randomBytes = (bytesLength) => utils.randomBytes(new Uint8Array(bytesLength));
 
 const createSS58 = (pubKey) => {
-  //const config = { chars: '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz', coder: base58, ipfs: 'z', type: 'base58' };
-  //var testKey = "0x46ebddef8cd9bb167dc30878d7113b7e168e6f0646beffd77d69d39bad76b47a"
-  //testKey = hexToUint8Array(testKey)
-  //var res = base58.decode(testKey)
-  //return res;
-
-  //const message = u8aConcat('evm:', testKey);
-  //const salt = randomBytes(8);
-  //12bzRJfh7arnnfPPUZHeJUaE62QLEwhK48QnH9LXeK2m1iZU
-  //const h10c = blake2b.create({ dkLen: 32 }).update(testKey).digest();
-  //var enc = new TextDecoder("utf-8");
-  //var arr = new Uint8Array([84,104,105,115,32,105,115,32,97,32,85,105,110,116, 56,65,114,114,97,121,32,99,111,110,118,101,114,116, 101,100,32,116,111,32,97,32,115,116,114,105,110,103]);
-  //console.log(enc.decode(h10c));
-
-
-  //var h10c = ss58.codec(0).encode(hexToBytes(pubKey.replace("0x", "")))
-  //return h10c
-  return "Unimplemented"
+  return encode(pubKey.replace("0x", ""))
 };
 
 
 
 const uuidV4 = () => {
   return "10000000-1000-4000-8000-100000000000".replace(/[018]/g, c =>
-    (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+    (c ^ utils.randomBytes(1)[0] & 15 >> c / 4).toString(16)
   );
 };
 
@@ -4167,7 +4200,7 @@ const privateKeyToAccount = (privateKey, ignoreLength) => {
   const privateKeyUint8Array = parseAndValidatePrivateKey(privateKey, ignoreLength);
 
   var pubKey = privateKeyToPublicKey(privateKeyUint8Array);
-  var dotAddress = createSS58();
+  var dotAddress = createSS58(pubKey);
   return {
     address: privateKeyToAddress(privateKeyUint8Array),
     ss58Address: dotAddress,
