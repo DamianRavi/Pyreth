@@ -104,7 +104,7 @@ export const rpcSendAbi = async (wallet, address, method, abi, args) => {
     )
     content.result = decodeParameters(params, content.result);
   }
-  else{
+  else if(params.length == 1){
     if(params[0].type.includes("int")){
       content.result = padLeft(content.result, 64)
     }
