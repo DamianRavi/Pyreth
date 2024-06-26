@@ -1,11 +1,11 @@
 {
   "name": "pyreth",
-  "version": "1.0.11",
+  "version": "1.0.12",
   "description": "A web3 interface for pyrebrowser.com",
   "main": "./index.js",
   "type": "module",
   "scripts": {
-    "build": "npx rollup index.js --format cjs --file ./dist/index.cjs && npm run build",
+    "build": "npx rollup index.js --format cjs --file ./dist/index.cjs",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "exports": {
