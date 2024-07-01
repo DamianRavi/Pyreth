@@ -8,9 +8,7 @@ import {
 } from '../../converter.js'
 import { encodePacked } from '../../hashes/solidityPack.js';
 import { sha3, sha3Raw, soliditySha3, soliditySha3Raw  } from '../../hashes.js'
-import { uuidV4, randomHex, checkAddressCheckSum } from '../../encoders.js'
-//console.log(web3.utils.sha3('web3.js'));
-//> 0x63667efb1961039c9bb0d6ea7a5abdd223a3aca7daa5044ad894226e1f83919a
+import { uuidV4, randomHex, checkAddressCheckSum, ecrecover } from '../../encoders.js'
 
 const format = () => "1"
 
@@ -45,38 +43,8 @@ const fromUtf8 = (value) => utf8ToHex(value)
 //const numberToHex = (value) => toHex(value)
 const stringToHex = (value) => toHex(value)
 
-/*
-
-bytesToHex, fromAscii, fromTwosComplement, asciiToHex
-
-hexToAscii, hexToBytes, hexToNumber, hexToNumberString, hexToString, hexToUtf8,
-
-bytesToUint8Array,
-checkAddressCheckSum, convert, convertScalarValue, encodePacked, format,
-fromWei, getStorageSlotNumForLongString,
-isAddress, isContractInitOptions, isDataFormat, isHex, isHexStrict, isNullish, isPromise, isUint8Array,
-keccak256Wrapper, leftPad, mergeDeep, padLeft, padRight,
-//pollTillDefined, pollTillDefinedAndReturnIntervalId, processSolidityEncodePackedArgs,
-randomBytes, randomHex,
-//rejectIfConditionAtInterval, rejectIfTimeout,
-rightPad,
-sha3, sha3Raw, soliditySha3, soliditySha3Raw,
-toAscii, toBigInt, toBool, toChecksumAddress, toDecimal, toHex, toNumber, toTwosComplement, toUtf8,
-//toWei, uint8ArrayConcat, uint8ArrayEquals,
-utf8ToBytes, uuidV4,
-//waitWithTimeout
-
-*/
-
-
-
-
-
-
-
-
 export {
-  bytesToHex, bytesToUint8Array, checkAddressCheckSum, convert, convertScalarValue, encodePacked, format,
+  bytesToHex, bytesToUint8Array, checkAddressCheckSum, convert, convertScalarValue, ecrecover, encodePacked, format,
   fromAscii, fromDecimal, fromTwosComplement, fromUtf8, fromWei, getStorageSlotNumForLongString, hexToAscii, hexToBytes, hexToNumber, hexToNumberString,
   hexToString, hexToUtf8, isAddress, isContractInitOptions, isDataFormat, isHex, isHexStrict, isNullish,
   isPromise, isUint8Array, keccak256Wrapper, leftPad, mergeDeep, numberToHex, padLeft, padRight,

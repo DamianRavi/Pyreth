@@ -1,9 +1,7 @@
 import { getRandomValues } from "crypto-js"
-//import { subtle } from "crypto"//.webcrypto;
 import TransactionFactory from './modules/eth/accounts/TransactionFactory.js'
 import { randomBytes as _randomBytes } from '@noble/hashes/utils';
 import {secp256k1} from '@noble/curves/secp256k1'
-//import * as secp256k1Curve from '@noble/curves/secp256k1'
 import { PrivateKeyLengthError, InvalidPrivateKeyError } from './errors.js'
 import { bytesToHex, bytesToUint8Array, uint8ArrayToBigInt, utf8ToBytes, uint8ArrayToHexString, hexToUint8Array, hexToNumber, toChecksumAddress, utf8ToHex, hexToBytes, uint8ArrayConcat, numberToHex } from './converter.js'
 import { isUint8Array, isHexStrict, ensureIfUint8Array, isNullish } from './validator.js'
@@ -11,12 +9,10 @@ import { sha3Raw } from './hashes.js'
 import { keccak_256 as keccak256 } from '@noble/hashes/sha3';
 import { scrypt as scryptSync } from '@noble/hashes/scrypt'
 import { decrypt as createDecipheriv, encrypt as createCipheriv } from './hashes/aes.js';
-//import * as ss58 from "@subsquid/ss58";//import { encodeAddress } from "@polkadot/util-crypto";
 import { encode, decode } from './hashes/ss58.js'
 import { blake2b } from '@noble/hashes/blake2b';
 import { blake2s } from '@noble/hashes/blake2s';
 import { base58 } from '@scure/base';
-
 
 export const randomHex = (bytesLength) => bytesToHex( _randomBytes(new Uint8Array(bytesLength)) );
 
@@ -25,8 +21,6 @@ export const randomBytes = (bytesLength) => _randomBytes(new Uint8Array(bytesLen
 export const createSS58 = (pubKey) => {
   return encode(pubKey.replace("0x", ""))
 }
-
-
 
 export const uuidV4 = () => {
   return "10000000-1000-4000-8000-100000000000".replace(/[018]/g, c =>
