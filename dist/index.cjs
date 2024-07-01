@@ -4125,8 +4125,6 @@ const createSS58 = (pubKey) => {
   return encode(pubKey.replace("0x", ""))
 };
 
-
-
 const uuidV4 = () => {
   return "10000000-1000-4000-8000-100000000000".replace(/[018]/g, c =>
     (c ^ utils.randomBytes(1)[0] & 15 >> c / 4).toString(16)
@@ -4450,9 +4448,6 @@ const signTransaction = (transaction, privateKey) => {
   };
 };
 
-//console.log(web3.utils.sha3('web3.js'));
-//> 0x63667efb1961039c9bb0d6ea7a5abdd223a3aca7daa5044ad894226e1f83919a
-
 const format = () => "1";
 
 const keccak256Wrapper = () => "1";
@@ -4494,6 +4489,7 @@ var Utils = /*#__PURE__*/Object.freeze({
   checkAddressCheckSum: checkAddressCheckSum,
   convert: convert,
   convertScalarValue: convertScalarValue,
+  ecrecover: ecrecover,
   encodePacked: encodePacked,
   format: format,
   fromAscii: fromAscii,
