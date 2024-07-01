@@ -4884,7 +4884,7 @@ class Eth {
   }
 
   getTransaction = (hash) => {
-    return rpcSend(this.wallet, "eth_getTransactionByHash", [hash])
+    return rpcSend(this.wallet, "eth_getTransactionByHash", hash, null)
   }
 
   getPendingTransactions = () => {
