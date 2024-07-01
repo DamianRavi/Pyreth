@@ -93,7 +93,7 @@ export const encrypt = (publicKeyTo, msg, opts) => {
   return new Promise(function(resolve) {
     //secp256k1.getPublicKey(secp256k1.utils.randomPrivateKey())
     var ephemPrivateKey = opts.ephemPrivateKey || secp256k1.utils.randomPrivateKey()//Buffer.from(randomBytes(32));
-    publicKeyTo = (getPublic("815ce989663d4efbc7564b4da3fe147097847fc8667de260563f54aae4a87101"))
+    //publicKeyTo = (getPublic("815ce989663d4efbc7564b4da3fe147097847fc8667de260563f54aae4a87101"))
     //uint8ArrayToHexString
     /*
     if(!isValidPrivateKey(ephemPrivateKey)){

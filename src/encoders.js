@@ -1,4 +1,3 @@
-import { getRandomValues } from "crypto-js"
 import TransactionFactory from './modules/eth/accounts/TransactionFactory.js'
 import { randomBytes as _randomBytes } from '@noble/hashes/utils';
 import {secp256k1} from '@noble/curves/secp256k1'

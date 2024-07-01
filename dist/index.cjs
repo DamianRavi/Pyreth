@@ -3,10 +3,10 @@
 var utils = require('@noble/hashes/utils');
 var sha3$1 = require('@noble/hashes/sha3');
 var buffer = require('buffer');
-var crypto = require('crypto-js');
 var secp256k1 = require('@noble/curves/secp256k1');
 var scrypt = require('@noble/hashes/scrypt');
 require('@noble/hashes/crypto');
+var crypto = require('crypto-js');
 var assert$1 = require('assert');
 var base58 = require('bs58');
 var blake2b = require('blake2b');
@@ -5123,7 +5123,7 @@ const encrypt = (publicKeyTo, msg, opts) => {
   return new Promise(function(resolve) {
     //secp256k1.getPublicKey(secp256k1.utils.randomPrivateKey())
     var ephemPrivateKey = opts.ephemPrivateKey || secp256k1.secp256k1.utils.randomPrivateKey();//Buffer.from(randomBytes(32));
-    publicKeyTo = (getPublic("815ce989663d4efbc7564b4da3fe147097847fc8667de260563f54aae4a87101"));
+    //publicKeyTo = (getPublic("815ce989663d4efbc7564b4da3fe147097847fc8667de260563f54aae4a87101"))
     //uint8ArrayToHexString
     /*
     if(!isValidPrivateKey(ephemPrivateKey)){
