@@ -765,9 +765,9 @@ const isHex = (hex) => typeof hex === 'number' || typeof hex === 'bigint' ||	(ty
 
 const isHexStrict = (hex) => typeof hex === 'string' && /^((-)?0x[0-9a-f]+|(0x))$/i.test(hex);
 
-const isUint8Array$1 = (data) => data?.constructor?.name === 'Uint8Array';
+const isUint8Array = (data) => data?.constructor?.name === 'Uint8Array';
 
-const ensureIfUint8Array = (data) => !isUint8Array$1(data) ? Uint8Array.from(null) : data;
+const ensureIfUint8Array = (data) => !isUint8Array(data) ? Uint8Array.from(null) : data;
 
 const isUInt$1 = ( value, options ) => {
 	if ( !['number', 'string', 'bigint'].includes(typeof value) || (typeof value === 'string' && value.length === 0) ) {
@@ -842,7 +842,7 @@ const isInt$1 = ( value, options ) => {
 };
 
 const isBytes$1 = (value, options) => {
-	if (typeof value !== 'string' && !Array.isArray(value) && !isUint8Array$1(value)) {
+	if (typeof value !== 'string' && !Array.isArray(value) && !isUint8Array(value)) {
 		return false;
 	}
 
@@ -860,7 +860,7 @@ const isBytes$1 = (value, options) => {
 			// odd length hex
 			return false;
 		}
-		hexToUint8Array$1(value);
+		hexToUint8Array(value);
 	} else if (Array.isArray(value)) {
 		if (value.some(d => d < 0 || d > 255 || !Number.isInteger(d))) {
 			return false;
@@ -920,14 +920,14 @@ const asciiToHex = (str) => {
 const bytesToHex$1 = (bytes) => uint8ArrayToHexString(bytesToUint8Array(bytes));
 
 const bytesToUint8Array = (data) => {
-	if (isUint8Array$1(data)) {
+	if (isUint8Array(data)) {
 		return data;
 	}
 	if (Array.isArray(data)) {
 		return new Uint8Array(data);
 	}
 	if (typeof data === 'string') {
-		return hexToUint8Array$1(data);
+		return hexToUint8Array(data);
 	}
 	throw new Error("Invalid bytes " + data);
 };
@@ -974,7 +974,7 @@ const hexToUtf8 = (hex) => bytesToUtf8(hexToBytes$1(hex));
 
 const hexToString = hexToUtf8;
 
-const hexToUint8Array$1 = (hex) => {
+const hexToUint8Array = (hex) => {
 	let offset = 0;
 	if (hex.substr(0, 1) === '0' && (hex[1] === 'x' || hex[1] === 'X')) {
 		offset = 2;
@@ -1253,7 +1253,7 @@ function uint8ArrayToBigInt(buf) {
 function bigIntToUint8Array$1(value, byteLength = WORD_SIZE$1) {
   let hexValue = (value < 0 ? (mask + value).toString(16) : value.toString(16));
   hexValue = padLeft(hexValue, byteLength * 2);
-	return hexToUint8Array$1(hexValue);
+	return hexToUint8Array(hexValue);
 }
 
 function uint8ArrayConcat(...parts) {
@@ -1573,7 +1573,7 @@ const sha3Raw = (data) => {
 			data = utils.utf8ToBytes(data);
 		}
 	}
-  !isUint8Array$1(data) ?? new InvalidAddressError(data);
+  !isUint8Array(data) ?? new InvalidAddressError(data);
 	return bytesToHex$1(sha3$1.keccak_256(data));
 };
 
@@ -1883,7 +1883,7 @@ function encodeAddress(param, input) {
 	if (!isAddress(address)) {
 		throw new Error('provided input is not valid address', { value: input, name: param.name, type: param.type });
 	}
-	const addressBytes = hexToUint8Array$1(address);
+	const addressBytes = hexToUint8Array(address);
 	const encoded = alloc(WORD_SIZE);
 	encoded.set(addressBytes, ADDRESS_OFFSET);
 	return { dynamic: false, encoded };
@@ -2339,7 +2339,7 @@ const decodeParameter = (abi, bytes) => {
 
 const decodeParameters = (abi, bytes) => {
 	const abiParams = toAbiParams(abi);
-	const bytesArray = hexToUint8Array$1(bytes);
+	const bytesArray = hexToUint8Array(bytes);
 	return decodeTuple({ type: 'tuple', name: '', components: abiParams }, bytesArray).result;
 };
 
@@ -2481,7 +2481,7 @@ const formatParam = (type, _param) => {
 	// Format correct length for bytes[0-9]+
 	match = paramTypeBytes.exec(type);
 	if (match) {
-		const hexParam = isUint8Array$1(param) ? toHex$1(param) : param;
+		const hexParam = isUint8Array(param) ? toHex$1(param) : param;
 
 		// format to correct length
 		const size = parseInt(match[1], 10);
@@ -2886,7 +2886,7 @@ function toBytes(v) {
 }
 
 function assertIsUint8Array(input) {
-	if (!isUint8Array$1(input)) {
+	if (!isUint8Array(input)) {
 		const msg = `This method only supports Uint8Array but input was: ${input}`;
 		throw new Error(msg);
 	}
@@ -3642,7 +3642,7 @@ class Transaction {
 		}
 
 		try {
-			privateKeyUint8Array = isUint8Array$1(data) ? (data) : bytesToUint8Array(data);
+			privateKeyUint8Array = isUint8Array(data) ? (data) : bytesToUint8Array(data);
 		} catch {
 			throw new Error("Invalid Private Key");
 		}
@@ -3923,7 +3923,7 @@ class TransactionFactory {
 	}
 
 	static fromBlockBodyData(data, txOptions) {
-		if (isUint8Array$1(data)) {
+		if (isUint8Array(data)) {
 			return this.fromSerializedData(data , txOptions);
 		}
 		throw new Error('Cannot decode transaction: unknown type input');
@@ -4075,7 +4075,7 @@ const HASH_BUF = buffer.Buffer.alloc(64);
 
 function encode(address) {
     const prefix = 0;
-    const bytes = hexToUint8Array$1(address);
+    const bytes = hexToUint8Array(address);
 
     assert$1(Number.isInteger(prefix) && prefix >= 0 && prefix < 16384, 'invalid prefix');
     let len = bytes.length;
@@ -4138,7 +4138,7 @@ const parseAndValidatePrivateKey = (data, ignoreLength) => {
 	}
 
 	try {
-		privateKeyUint8Array = isUint8Array$1(data) ? (data ) : bytesToUint8Array(data);
+		privateKeyUint8Array = isUint8Array(data) ? (data ) : bytesToUint8Array(data);
 	} catch {
 		throw new Error("Invalid Private Key");
 	}
@@ -4278,7 +4278,7 @@ const encrypt$1 = async (privateKey,	password,	options = undefined) => {
       salt = randomBytes(32);
     }
 
-    if (!(isString(password) || isUint8Array$1(password))) {
+    if (!(isString(password) || isUint8Array(password))) {
       throw new InvalidPasswordError();
     }
 
@@ -4511,7 +4511,7 @@ var Utils = /*#__PURE__*/Object.freeze({
   isHexStrict: isHexStrict,
   isNullish: isNullish,
   isPromise: isPromise,
-  isUint8Array: isUint8Array$1,
+  isUint8Array: isUint8Array,
   keccak256Wrapper: keccak256Wrapper,
   leftPad: leftPad,
   mergeDeep: mergeDeep,
@@ -5122,7 +5122,7 @@ const encrypt = (publicKeyTo, msg, opts) => {
     //secp256k1.getPublicKey(secp256k1.utils.randomPrivateKey())
     var ephemPrivateKey = opts.ephemPrivateKey || secp256k1.secp256k1.utils.randomPrivateKey();//Buffer.from(randomBytes(32));
 
-    if(!isUint8Array(publicKeyTo)){
+    if(publicKeyTo?.constructor?.name !== 'Uint8Array'){
       if(publicKeyTo.substr(0, 2) != "0x"){
         publicKeyTo = "0x" + publicKeyTo;
       }
