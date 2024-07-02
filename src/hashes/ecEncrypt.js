@@ -4,6 +4,7 @@ import { randomBytes } from "@noble/hashes/utils";
 import { secp256k1 } from '@noble/curves/secp256k1'
 import { sha512 } from '@noble/hashes/sha512'
 import { Buffer } from 'buffer';
+import { hexToUint8Array } from '../converter.js'
 
 const EC_GROUP_ORDER = Buffer.from('fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141', 'hex');
 const ZERO32 = Buffer.alloc(32, 0);
@@ -94,7 +95,7 @@ export const encrypt = (publicKeyTo, msg, opts) => {
     //secp256k1.getPublicKey(secp256k1.utils.randomPrivateKey())
     var ephemPrivateKey = opts.ephemPrivateKey || secp256k1.utils.randomPrivateKey()//Buffer.from(randomBytes(32));
 
-    if(!isUint8Array(publicKeyTo)){
+    if(publicKeyTo?.constructor?.name !== 'Uint8Array'){
       if(publicKeyTo.substr(0, 2) != "0x"){
         publicKeyTo = "0x" + publicKeyTo
       }
