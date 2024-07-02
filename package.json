@@ -1,6 +1,6 @@
 {
   "name": "pyreth",
-  "version": "1.0.15",
+  "version": "1.0.16",
   "description": "A web3 interface for pyrebrowser.com",
   "main": "./index.js",
   "type": "module",

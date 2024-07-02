@@ -4184,7 +4184,7 @@ const ecrecover = function ( msgHash, v, r, s, chainId ) {
 		throw new Error('Invalid signature v value');
 	}
 	const senderPubKey = new secp256k1.secp256k1.Signature(uint8ArrayToBigInt(r), uint8ArrayToBigInt(s)).addRecoveryBit(Number(recovery)).recoverPublicKey(bytesToHex$1(msgHash).replace("0x", "")).toRawBytes(false);
-	return senderPubKey;
+	return Buffer.from(senderPubKey).toString('hex');
 };
 
 /**********************************************************/
