@@ -109,13 +109,11 @@ export const create = () => {
 export const privateKeyToAccount = (privateKey, ignoreLength) => {
   const privateKeyUint8Array = parseAndValidatePrivateKey(privateKey, ignoreLength);
 
-  var pubKey = privateKeyToPublicKey(privateKeyUint8Array)
-  var dotAddress = createSS58(pubKey)
   return {
     address: privateKeyToAddress(privateKeyUint8Array),
-    ss58Address: dotAddress,
+    ss58Address: createSS58(privateKeyToPublicKey(privateKey)),
     privateKey: bytesToHex(privateKeyUint8Array),
-    publicKey: pubKey,
+    publicKey: privateKeyToPublicKey(privateKey, false),
     signTransaction: (_tx) => {
       throw new Error('Do not have network access to sign the transaction');
     },

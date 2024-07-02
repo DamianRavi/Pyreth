@@ -1,10 +1,11 @@
-import crypto from "crypto-js";
+import crypto from "crypto";
 import { randomBytes } from "@noble/hashes/utils";
 //import * as secp256k1 from '@noble/secp256k1'
 import { secp256k1 } from '@noble/curves/secp256k1'
 import { sha512 } from '@noble/hashes/sha512'
 import { Buffer } from 'buffer';
 import { hexToUint8Array } from '../converter.js'
+import { decrypt as createDecipheriv, encrypt as createCipheriv } from './aes.js';
 
 const EC_GROUP_ORDER = Buffer.from('fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141', 'hex');
 const ZERO32 = Buffer.alloc(32, 0);
@@ -82,7 +83,6 @@ const derive = (privateKeyA, publicKeyB) => {
     //assert(privateKeyA.length === 32, "Bad private key");
     //assert(isValidPrivateKey(privateKeyA), "Bad private key");
     //resolve(ecdh.derive(privateKeyA, publicKeyB));
-    console.log(privateKeyA, publicKeyB)
     resolve(secp256k1.getSharedSecret(privateKeyA, publicKeyB))
   });
 };
@@ -94,14 +94,13 @@ export const encrypt = (publicKeyTo, msg, opts) => {
   return new Promise(function(resolve) {
     //secp256k1.getPublicKey(secp256k1.utils.randomPrivateKey())
     var ephemPrivateKey = opts.ephemPrivateKey || secp256k1.utils.randomPrivateKey()//Buffer.from(randomBytes(32));
-
     if(publicKeyTo?.constructor?.name !== 'Uint8Array'){
-      if(publicKeyTo.substr(0, 2) != "0x"){
-        publicKeyTo = "0x" + publicKeyTo
+      if(publicKeyTo.substr(0, 2) == "0x"){
+        publicKeyTo = publicKeyTo.slice(2)
       }
       publicKeyTo = hexToUint8Array(publicKeyTo)
     }
-    //publicKeyTo = getPublic("70edafb40309e63fb3054f60b32790a5e85defc4620fbaed14a44af06fbaead2")
+
     /*
     if(!isValidPrivateKey(ephemPrivateKey)){
       console.log("INVALID KEY")
@@ -128,7 +127,6 @@ export const decrypt = (privateKey, opts) => {
   privateKey = privateKey.substr(-64)
   return derive(privateKey, opts.ephemPublicKey).then(function(Px) {
     assert(privateKey.length === 64, "Bad private key");
-    //assert(isValidPrivateKey(privateKey), "Bad private key");
     var hash = sha512(Px);
     var encryptionKey = hash.slice(0, 32);
     var macKey = hash.slice(32);

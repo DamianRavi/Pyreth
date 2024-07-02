@@ -14,6 +14,7 @@ require('@noble/hashes/blake2b');
 require('@noble/hashes/blake2s');
 require('@scure/base');
 require('@noble/hashes/pbkdf2');
+var crypto$1 = require('crypto');
 var sha512 = require('@noble/hashes/sha512');
 
 class BaseError extends Error {
@@ -4197,13 +4198,11 @@ const create = () => {
 const privateKeyToAccount = (privateKey, ignoreLength) => {
   const privateKeyUint8Array = parseAndValidatePrivateKey(privateKey, ignoreLength);
 
-  var pubKey = privateKeyToPublicKey(privateKeyUint8Array);
-  var dotAddress = createSS58(pubKey);
   return {
     address: privateKeyToAddress(privateKeyUint8Array),
-    ss58Address: dotAddress,
+    ss58Address: createSS58(privateKeyToPublicKey(privateKey)),
     privateKey: bytesToHex$1(privateKeyUint8Array),
-    publicKey: pubKey,
+    publicKey: privateKeyToPublicKey(privateKey, false),
     signTransaction: (_tx) => {
       throw new Error('Do not have network access to sign the transaction');
     },
@@ -5077,7 +5076,7 @@ function equalConstTime(b1, b2) {
 }
 
 function hmacSha256(key, msg) {
-  return crypto.createHmac("sha256", key).update(msg).digest();
+  return crypto$1.createHmac("sha256", key).update(msg).digest();
 }
 /*
 function sha512(msg) {
@@ -5085,14 +5084,14 @@ function sha512(msg) {
 }*/
 
 function aes256CbcEncrypt(iv, key, plaintext) {
-  var cipher = crypto.createCipheriv("aes-256-cbc", key, iv);
+  var cipher = crypto$1.createCipheriv("aes-256-cbc", key, iv);
   var firstChunk = cipher.update(plaintext);
   var secondChunk = cipher.final();
   return buffer.Buffer.concat([firstChunk, secondChunk]);
 }
 
 function aes256CbcDecrypt(iv, key, ciphertext) {
-  var cipher = crypto.createDecipheriv("aes-256-cbc", key, iv);
+  var cipher = crypto$1.createDecipheriv("aes-256-cbc", key, iv);
   var firstChunk = cipher.update(ciphertext);
   var secondChunk = cipher.final();
   return buffer.Buffer.concat([firstChunk, secondChunk]);
@@ -5109,7 +5108,6 @@ const derive = (privateKeyA, publicKeyB) => {
     //assert(privateKeyA.length === 32, "Bad private key");
     //assert(isValidPrivateKey(privateKeyA), "Bad private key");
     //resolve(ecdh.derive(privateKeyA, publicKeyB));
-    console.log(privateKeyA, publicKeyB);
     resolve(secp256k1.secp256k1.getSharedSecret(privateKeyA, publicKeyB));
   });
 };
@@ -5121,14 +5119,13 @@ const encrypt = (publicKeyTo, msg, opts) => {
   return new Promise(function(resolve) {
     //secp256k1.getPublicKey(secp256k1.utils.randomPrivateKey())
     var ephemPrivateKey = opts.ephemPrivateKey || secp256k1.secp256k1.utils.randomPrivateKey();//Buffer.from(randomBytes(32));
-
     if(publicKeyTo?.constructor?.name !== 'Uint8Array'){
-      if(publicKeyTo.substr(0, 2) != "0x"){
-        publicKeyTo = "0x" + publicKeyTo;
+      if(publicKeyTo.substr(0, 2) == "0x"){
+        publicKeyTo = publicKeyTo.slice(2);
       }
       publicKeyTo = hexToUint8Array(publicKeyTo);
     }
-    //publicKeyTo = getPublic("70edafb40309e63fb3054f60b32790a5e85defc4620fbaed14a44af06fbaead2")
+
     /*
     if(!isValidPrivateKey(ephemPrivateKey)){
       console.log("INVALID KEY")
@@ -5155,7 +5152,6 @@ const decrypt = (privateKey, opts) => {
   privateKey = privateKey.substr(-64);
   return derive(privateKey, opts.ephemPublicKey).then(function(Px) {
     assert(privateKey.length === 64, "Bad private key");
-    //assert(isValidPrivateKey(privateKey), "Bad private key");
     var hash = sha512.sha512(Px);
     var encryptionKey = hash.slice(0, 32);
     var macKey = hash.slice(32);
