@@ -5263,7 +5263,7 @@ class Pyre {
 
   request = async (data) => {
     if(data.method == "eth_requestAccounts"){
-      return await connect();
+      return [await connect()];
     }
   }
 
