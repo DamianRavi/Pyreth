@@ -73,7 +73,7 @@ class Provider{
 
 class Pyre {
   constructor(provider) {
-    this.provider = new Provider(provider ? provider : "http://localhost:8484/pyre")
+    this.provider = new Provider(typeof provider == "string" ? provider : "http://localhost:8484/pyre")
     this.testBN = BigInt(55)
     this.wallet = new Wallet(this.provider)
     this.utils = Utils;
@@ -86,6 +86,7 @@ class Pyre {
     //this.quote = quote;
     this.encrypt = encrypt;
     this.decrypt = decrypt;
+    this.Contract.prototype.connectedWallet = this.wallet;
   }
 
   connect = async (provider, options) => {
@@ -118,6 +119,8 @@ class Pyre {
     var res = await rpcSend(this.wallet, "eth_sendTransaction", {to: address, from: this.wallet.defaultAccount, value: amount, chain: chain})
   }
 
+
+
 /*
   swap = (from, amount, to, opts = {amountOutMin: 0, amountInMax: null, deadline: Math.floor(new Date().getTime() + 60000 / 1000) }) => {
     var swapContract = Contract(swapAbi, swapAddress);
@@ -133,6 +136,35 @@ class Pyre {
 
   quote = (provider, options) => {
     //call quote function from Uniswap
+  }
+
+  Contract = class {
+    constructor(abi, address) {
+      this.abi = abi;
+      this.address = address;
+      this.methods = {};
+      this.estimateGas = {};
+      this.initContract();
+    }
+
+    initContract() { //make private internal function
+      var newMethods = this.abi.filter((e) => e.type == 'function')
+      for(let x = 0; x < newMethods.length; x++){
+        if(newMethods[x].stateMutability == "view"){
+          this[newMethods[x].name] = async (...args) => await rpcSendAbi(this.connectedWallet, this.address, "eth_call", newMethods[x], [...args]);
+          this.methods[newMethods[x].name] = (...args) => {return({
+            call: async (options = {}) => await rpcSendAbi(this.connectedWallet, this.address, "eth_call", newMethods[x], [...args, options])
+          })}
+        }
+        else{
+          this[newMethods[x].name] = async (...args) => await rpcSendAbi(this.connectedWallet, this.address, "eth_sendTransaction", newMethods[x], [...args]);
+          this.methods[newMethods[x].name] = (...args) => {return({
+            send: async (options = {}) => await rpcSendAbi(this.connectedWallet, this.address, "eth_sendTransaction", newMethods[x], [...args, options])
+          })}
+        }
+        this.estimateGas[newMethods[x].name] = async (...args) => await rpcSendAbi(this.connectedWallet, this.address, "eth_estimateGas", newMethods[x], [...args]);
+      }
+    }
   }
 
 }
