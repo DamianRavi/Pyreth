@@ -14,7 +14,6 @@ require('@noble/hashes/blake2b');
 require('@noble/hashes/blake2s');
 require('@scure/base');
 require('@noble/hashes/pbkdf2');
-var crypto$1 = require('crypto');
 var sha512 = require('@noble/hashes/sha512');
 
 class BaseError extends Error {
@@ -5081,7 +5080,7 @@ function equalConstTime(b1, b2) {
 }
 
 function hmacSha256(key, msg) {
-  return crypto$1.createHmac("sha256", key).update(msg).digest();
+  return crypto.createHmac("sha256", key).update(msg).digest();
 }
 /*
 function sha512(msg) {
@@ -5089,14 +5088,14 @@ function sha512(msg) {
 }*/
 
 function aes256CbcEncrypt(iv, key, plaintext) {
-  var cipher = crypto$1.createCipheriv("aes-256-cbc", key, iv);
+  var cipher = crypto.createCipheriv("aes-256-cbc", key, iv);
   var firstChunk = cipher.update(plaintext);
   var secondChunk = cipher.final();
   return buffer.Buffer.concat([firstChunk, secondChunk]);
 }
 
 function aes256CbcDecrypt(iv, key, ciphertext) {
-  var cipher = crypto$1.createDecipheriv("aes-256-cbc", key, iv);
+  var cipher = crypto.createDecipheriv("aes-256-cbc", key, iv);
   var firstChunk = cipher.update(ciphertext);
   var secondChunk = cipher.final();
   return buffer.Buffer.concat([firstChunk, secondChunk]);

@@ -1,4 +1,4 @@
-import crypto from "crypto";
+import crypto from "crypto-js";
 import { randomBytes } from "@noble/hashes/utils";
 //import * as secp256k1 from '@noble/secp256k1'
 import { secp256k1 } from '@noble/curves/secp256k1'
