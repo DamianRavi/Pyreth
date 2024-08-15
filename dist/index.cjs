@@ -4822,8 +4822,12 @@ class Eth {
     return rpcSend(this.wallet, "eth_hashrate")
   }
 
-  getGasPrice = () => {
-   return rpcSend(this.wallet, "eth_gasPrice")
+  getGasPrice = async () => {
+   var result = await rpcSend(this.wallet, "eth_gasPrice");
+   if(result.result){
+     return(hexToNumberString(result.result))
+   }
+   throw Error("Invalid Response")
   }
 
   getFeeHistory = () => {
@@ -4834,12 +4838,20 @@ class Eth {
     return rpcSend(this.wallet, "eth_accounts")
   }
 
-  getBlockNumber = () => {
-    return rpcSend(this.wallet, "eth_blockNumber")
+  getBlockNumber = async () => {
+    var result = await rpcSend(this.wallet, "eth_blockNumber");
+    if(result.result){
+      return(hexToNumberString(result.result))
+    }
+    throw Error("Invalid Response")
   }
 
-  getBalance = (address, tag) => {
-    return rpcSend(this.wallet, "eth_getBalance", address)
+  getBalance = async (address, tag) => {
+    var result = await rpcSend(this.wallet, "eth_getBalance", address);
+    if(result.result){
+      return(hexToNumberString(result.result))
+    }
+    throw Error("Invalid Response")
   }
 
   getStorageAt = (address, storageSlot, blockNumber = "latest") => {
@@ -4931,16 +4943,24 @@ class Eth {
     return rpcSend(this.wallet, "eth_call", transaction, blockNumber)
   }
 
-  estimateGas = (transaction, blockNumber) => {
-    return rpcSend(this.wallet, "eth_estimateGas", transaction, blockNumber)
+  estimateGas = async (transaction, blockNumber) => {
+    var result = await rpcSend(this.wallet, "eth_estimateGas", transaction, blockNumber);
+    if(result.result){
+      return(hexToNumberString(result.result))
+    }
+    throw Error("Invalid Response")
   }
 
   getPastLogs = (filter) => {
     return rpcSend(this.wallet, "eth_getLogs", [filter])
   }
 
-  getChainId = () => {
-    return rpcSend(this.wallet, "eth_chainId")
+  getChainId = async () => {
+    var result = await rpcSend(this.wallet, "eth_chainId");
+    if(result.result){
+      return(hexToNumberString(result.result))
+    }
+    throw Error("Invalid Response")
   }
 
   getWork = () => {
