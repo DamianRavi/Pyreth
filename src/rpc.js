@@ -15,7 +15,18 @@ export const rpcSend = async (wallet, method, args, blockNumber = "latest") => {
   return content ? content : {err: "RPC Not Active"}
 }
 
-
+export const rpcSign = async (wallet, method, args) => {
+  var rawResponse = await fetch(wallet.provider.provider, { method: "POST", headers: {'Accept': 'application/json', 'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      id: uuidV4(),
+      jsonrpc: "2.0",
+      method: method,
+      params: args
+    })
+  })
+  var content = await rawResponse?.json();
+  return content ? content : {err: "RPC Not Active"}
+}
 
 export const rpcSendAbi = async (wallet, address, method, abi, args) => {
   /*

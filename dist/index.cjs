@@ -4552,7 +4552,18 @@ const rpcSend = async (wallet, method, args, blockNumber = "latest") => {
   return content ? content : {err: "RPC Not Active"}
 };
 
-
+const rpcSign = async (wallet, method, args) => {
+  var rawResponse = await fetch(wallet.provider.provider, { method: "POST", headers: {'Accept': 'application/json', 'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      id: uuidV4(),
+      jsonrpc: "2.0",
+      method: method,
+      params: args
+    })
+  });
+  var content = await rawResponse?.json();
+  return content ? content : {err: "RPC Not Active"}
+};
 
 const rpcSendAbi = async (wallet, address, method, abi, args) => {
   /*
@@ -4932,7 +4943,7 @@ class Eth {
   }
 
   sign = (address, message) => {
-    return rpcSend(this.wallet, "eth_sign", [address, message])
+    return rpcSign(this.wallet, "eth_sign", [address, message])
   }
 
   signTransaction = (transaction) => {

@@ -1,4 +1,4 @@
-import { rpcSend, rpcSendAbi } from '../../rpc.js'
+import { rpcSend, rpcSign, rpcSendAbi } from '../../rpc.js'
 import * as Abi from './abi/index.js'
 import { Accounts } from './accounts/index.js'
 import { hexToNumberString } from '../../converter.js'
@@ -241,7 +241,7 @@ export class Eth {
   }
 
   sign = (address, message) => {
-    return rpcSend(this.wallet, "eth_sign", [address, message])
+    return rpcSign(this.wallet, "eth_sign", [address, message])
   }
 
   signTransaction = (transaction) => {
