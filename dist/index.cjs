@@ -958,7 +958,6 @@ const fromTwosComplement = (value, nibbleWidth = 64) => {
 };
 
 const utf8ToHex = (str) => {
-  console.log("utf8ToHex", str, toHex$1(str, true));
   typeof str === "string" || ValidationError(`Invalid String ${typeof str} ${JSON.stringify(str)}`); //toHex(str, true)
 	let strWithoutNullCharacter = str.replace(/^(?:\u0000)/, '');
 	strWithoutNullCharacter = strWithoutNullCharacter.replace(/(?:\u0000)$/, '');
@@ -4944,9 +4943,6 @@ class Eth {
 
   sign = (message, address) => {
     var result = rpcSign(this.wallet, "eth_sign", [address, message]);
-    if(result.err){
-      throw new Error(result.err)
-    }
     if(result.error){
       throw new Error(result.error)
     }

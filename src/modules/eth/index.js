@@ -242,9 +242,6 @@ export class Eth {
 
   sign = (message, address) => {
     var result = rpcSign(this.wallet, "eth_sign", [address, message])
-    if(result.err){
-      throw new Error(result.err)
-    }
     if(result.error){
       throw new Error(result.error)
     }

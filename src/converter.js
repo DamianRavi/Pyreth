@@ -95,7 +95,6 @@ export const fromTwosComplement = (value, nibbleWidth = 64) => {
 };
 
 export const utf8ToHex = (str) => {
-  console.log("utf8ToHex", str, toHex(str, true))
   typeof str === "string" || ValidationError(`Invalid String ${typeof str} ${JSON.stringify(str)}`); //toHex(str, true)
 	let strWithoutNullCharacter = str.replace(/^(?:\u0000)/, '');
 	strWithoutNullCharacter = strWithoutNullCharacter.replace(/(?:\u0000)$/, '');
