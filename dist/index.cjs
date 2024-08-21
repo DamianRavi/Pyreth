@@ -4943,7 +4943,14 @@ class Eth {
   }
 
   sign = (message, address) => {
-    return rpcSign(this.wallet, "eth_sign", [address, message])
+    var result = rpcSign(this.wallet, "eth_sign", [address, message]);
+    if(result.err){
+      throw new Error(result.err)
+    }
+    if(result.error){
+      throw new Error(result.error)
+    }
+    return result.result
   }
 
   signTransaction = (transaction) => {
