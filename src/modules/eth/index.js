@@ -240,8 +240,8 @@ export class Eth {
     return rpcSend(this.wallet, "eth_sendRawTransaction", transaction)
   }
 
-  sign = (message, address) => {
-    var result = rpcSign(this.wallet, "eth_sign", [address, message])
+  sign = async (message, address) => {
+    var result = await rpcSign(this.wallet, "eth_sign", [address, message])
     if(result.error){
       throw new Error(result.error)
     }
