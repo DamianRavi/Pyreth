@@ -4942,7 +4942,7 @@ class Eth {
     return rpcSend(this.wallet, "eth_sendRawTransaction", transaction)
   }
 
-  sign = (address, message) => {
+  sign = (message, address) => {
     return rpcSign(this.wallet, "eth_sign", [address, message])
   }
 
