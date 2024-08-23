@@ -88,14 +88,19 @@ export const rpcSendAbi = async (wallet, address, method, abi, args) => {
       inputs: args,
       params: [{to: address, from: wallet.defaultAccount, value: "0", ...options, input: data}, "latest"]
     })
-  }).catch((err) => console.log(err))
+  }).catch((err) => {
+    console.log(err)
+  })
+
+
+
   var content = await rawResponse?.json();
 
   if(!content){
     return {err: "RPC Not Active"}
   }
   if(content.error){
-    return {err: content.error.message}
+    throw new Error(content.error.message)
   }
 
   var params = abi.outputs.map((e) => { return({type: e.type, name: e.name}) })
