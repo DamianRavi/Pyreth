@@ -1,4 +1,4 @@
-import { rpcSend, rpcSign, rpcSendAbi } from '../../rpc.js'
+import { rpcSend, rpcSendAbi } from '../../rpc.js'
 import * as Abi from './abi/index.js'
 import { Accounts } from './accounts/index.js'
 import { hexToNumberString } from '../../converter.js'
