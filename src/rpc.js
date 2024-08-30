@@ -2,20 +2,7 @@ import {decodeParameter, decodeParameters, encodeFunctionCall, encodeParameter} 
 import { padLeft } from './string.js'
 import { uuidV4 } from "./modules/utils/index.js"
 
-export const rpcSend = async (wallet, method, args, blockNumber = "latest") => {
-  var rawResponse = await fetch(wallet.provider.provider, { method: "POST", headers: {'Accept': 'application/json', 'Content-Type': 'application/json'},
-    body: JSON.stringify({
-      id: uuidV4(),
-      jsonrpc: "2.0",
-      method: method,
-      params: [args, blockNumber]
-    })
-  })
-  var content = await rawResponse?.json();
-  return content ? content : {err: "RPC Not Active"}
-}
-
-export const rpcSign = async (wallet, method, args) => {
+export const rpcSend = async (wallet, method, args = []) => { //blockNumber = "latest"
   var rawResponse = await fetch(wallet.provider.provider, { method: "POST", headers: {'Accept': 'application/json', 'Content-Type': 'application/json'},
     body: JSON.stringify({
       id: uuidV4(),
@@ -98,6 +85,7 @@ export const rpcSendAbi = async (wallet, address, method, abi, args) => {
 
   if(!content){
     return {err: "RPC Not Active"}
+    //throw new Error("RPC Not Active")
   }
   if(content.error){
     throw new Error(content.error.message)

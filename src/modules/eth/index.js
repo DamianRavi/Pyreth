@@ -120,7 +120,7 @@ export class Eth {
   }
 
   getCoinbase = () => {
-    return rpcSend(this.wallet, "eth_coinbase")
+    console.log("Mot Implemented Yet")
   }
 
   isMining = () => {
@@ -139,8 +139,8 @@ export class Eth {
    throw Error("Invalid Response")
   }
 
-  getFeeHistory = () => {
-    return rpcSend(this.wallet, "eth_feeHistory")
+  getFeeHistory = (blockCount, newestBlock, sampleArray) => {
+    return rpcSend(this.wallet, "eth_feeHistory", [blockCount, newestBlock, sampleArray])
   }
 
   getAccounts = () => {
@@ -155,8 +155,8 @@ export class Eth {
     throw Error("Invalid Response")
   }
 
-  getBalance = async (address, tag) => {
-    var result = await rpcSend(this.wallet, "eth_getBalance", address)
+  getBalance = async (address, tag = "latest") => {
+    var result = await rpcSend(this.wallet, "eth_getBalance", [address])
     if(result.result){
       return(hexToNumberString(result.result))
     }
@@ -164,19 +164,19 @@ export class Eth {
   }
 
   getStorageAt = (address, storageSlot, blockNumber = "latest") => {
-    return rpcSend(this.wallet, "eth_getStorageAt", [address, storageSlot], blockNumber)
+    return rpcSend(this.wallet, "eth_getStorageAt", [address, storageSlot, blockNumber])
   }
 
-  getCode = (address, blockNumber) => {
-    return rpcSend(this.wallet, "eth_getCode", [address], blockNumber)
+  getCode = (address, blockNumber = "latest") => {
+    return rpcSend(this.wallet, "eth_getCode", [address, blockNumber])
   }
 
-  getBlock = (block) => {
+  getBlock = (block, txDetails) => {
     if(isNaN(Number(block))){
-      return rpcSend(this.wallet, "eth_getBlockByHash", [block])
+      return rpcSend(this.wallet, "eth_getBlockByHash", [block, txDetails])
     }
     else{
-      return rpcSend(this.wallet, "eth_getBlockByNumber", [block])
+      return rpcSend(this.wallet, "eth_getBlockByNumber", [block, txDetails])
     }
   }
 
@@ -200,15 +200,15 @@ export class Eth {
 
   getUncle = (block, index) => {
     if(isNaN(Number(block))){
-      return rpcSend(this.wallet, "eth_getUncleByBlockHashAndIndex", [block])
+      return rpcSend(this.wallet, "eth_getUncleByBlockHashAndIndex", [block, index])
     }
     else{
-      return rpcSend(this.wallet, "eth_getUncleByBlockNumberAndIndex", [block])
+      return rpcSend(this.wallet, "eth_getUncleByBlockNumberAndIndex", [block, index])
     }
   }
 
   getTransaction = (hash) => {
-    return rpcSend(this.wallet, "eth_getTransactionByHash", hash, null)
+    return rpcSend(this.wallet, "eth_getTransactionByHash", hash)
   }
 
   getPendingTransactions = () => {
@@ -225,23 +225,23 @@ export class Eth {
   }
 
   getTransactionReceipt = (transactionHash) => {
-    return rpcSend(this.wallet, "eth_getTransactionReceipt", transactionHash)
+    return rpcSend(this.wallet, "eth_getTransactionReceipt", [transactionHash])
   }
 
   getTransactionCount = (address, blockNumber) => {
-    return rpcSend(this.wallet, "eth_getTransactionCount", address, blockNumber)
+    return rpcSend(this.wallet, "eth_getTransactionCount", [address, blockNumber])
   }
 
   sendTransaction = (transaction) => {
-    return rpcSend(this.wallet, "eth_sendTransaction", transaction)
+    return rpcSend(this.wallet, "eth_sendTransaction", [transaction])
   }
 
   sendSignedTransaction = (transaction) => {
-    return rpcSend(this.wallet, "eth_sendRawTransaction", transaction)
+    return rpcSend(this.wallet, "eth_sendRawTransaction", [transaction])
   }
 
   sign = async (message, address) => {
-    var result = await rpcSign(this.wallet, "eth_sign", [address, message])
+    var result = await rpcSend(this.wallet, "eth_sign", [address, message])
     if(result.error){
       throw new Error(result.error)
     }
@@ -249,15 +249,15 @@ export class Eth {
   }
 
   signTransaction = (transaction) => {
-    return rpcSend(this.wallet, "eth_signTransaction", transaction)
+    return rpcSend(this.wallet, "eth_signTransaction", [transaction])
   }
 
-  call = (transaction, blockNumber) => {
-    return rpcSend(this.wallet, "eth_call", transaction, blockNumber)
+  call = (transaction, blockNumber = " latest") => {
+    return rpcSend(this.wallet, "eth_call", [transaction, blockNumber])
   }
 
-  estimateGas = async (transaction, blockNumber) => {
-    var result = await rpcSend(this.wallet, "eth_estimateGas", transaction, blockNumber)
+  estimateGas = async (transaction, blockNumber = " latest") => {
+    var result = await rpcSend(this.wallet, "eth_estimateGas", [transaction, blockNumber])
     if(result.result){
       return(hexToNumberString(result.result))
     }
