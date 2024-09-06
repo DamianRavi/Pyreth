@@ -146,7 +146,7 @@ class Pyre {
   }
 
   send = async (address, amount, chain = null) => { //opts can include chain variable
-    var res = await rpcSend(this.wallet, "eth_sendTransaction", {to: address, from: this.wallet.defaultAccount, value: amount, chain: chain})
+    var res = await rpcSend(this.wallet, "eth_sendTransaction", {to: address, from: this.wallet.defaultAccount, value: amount}, chain)
   }
 
 

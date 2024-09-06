@@ -4538,20 +4538,21 @@ var Utils = /*#__PURE__*/Object.freeze({
   uuidV4: uuidV4
 });
 
-const rpcSend = async (wallet, method, args = []) => { //blockNumber = "latest"
+const rpcSend = async (wallet, method, args = [], chain = null) => { //blockNumber = "latest"
   var rawResponse = await fetch(wallet.provider.provider, { method: "POST", headers: {'Accept': 'application/json', 'Content-Type': 'application/json'},
     body: JSON.stringify({
       id: uuidV4(),
       jsonrpc: "2.0",
       method: method,
-      params: args
+      params: args,
+      ...(chain && {chain: chain})
     })
   });
   var content = await rawResponse?.json();
   return content ? content : {err: "RPC Not Active"}
 };
 
-const rpcSendAbi = async (wallet, address, method, abi, args) => {
+const rpcSendAbi = async (wallet, address, method, abi, args, chain = null) => {
   /*
   from: DATA, 20 Bytes - The address the transaction is sent from.
   to: DATA, 20 Bytes - (optional when creating new contract) The address the transaction is directed to.
@@ -4609,7 +4610,8 @@ const rpcSendAbi = async (wallet, address, method, abi, args) => {
       method: method,
       abiData: abi,
       inputs: args,
-      params: [{to: address, from: wallet.defaultAccount, value: "0", ...options, input: data}, "latest"]
+      params: [{to: address, from: wallet.defaultAccount, value: "0", ...options, input: data}, "latest"],
+      ...(chain && {chain: chain})
     })
   }).catch((err) => {
     console.log(err);
@@ -5047,7 +5049,7 @@ class Mail {
 
   sendMail = async (receiver, title, message, value = 0, options = {}) => {
     options.chain = "DEV";
-    var mailPrice = await rpcSendAbi(this.wallet, mailAddress, "eth_call", mailPriceAbi, [receiver]);
+    var mailPrice = await rpcSendAbi(this.wallet, mailAddress, "eth_call", mailPriceAbi, [receiver], options);
     options.value = (value != 0 ? toWei(value, "ether") : options.value);
     options.value = (options.value ? BigInt(options.value) + BigInt(mailPrice) : mailPrice);
     return await rpcSendAbi(this.wallet, "eth_transfer", sendMailAbi, [receiver, title, message, "0x0000000000000000000000000000000000000000", 0], options);
@@ -5055,10 +5057,10 @@ class Mail {
 
   sendMailToken = async (receiver, title, message, token, tokenValue, options = {}) => {
     options.chain = "DEV";
-    var mailPrice = await rpcSendAbi(this.wallet, mailAddress, "eth_call", mailPriceAbi, [receiver]);
+    var mailPrice = await rpcSendAbi(this.wallet, mailAddress, "eth_call", mailPriceAbi, [receiver], options);
     options.value = (options.value ? BigInt(options.value) + BigInt(mailPrice) : mailPrice);
     //APPROVE CONTRACT ERC20
-    return await rpcSendAbi(this.wallet, mailAddress, "eth_transfer", sendMailAbi, [receiver, title, message, token, tokenValue]);
+    return await rpcSendAbi(this.wallet, mailAddress, "eth_transfer", sendMailAbi, [receiver, title, message, token, tokenValue], options);
   }
 
   encrypt = async (address, message) => {
@@ -5073,14 +5075,14 @@ class Mail {
 
   pay = async (user, productID, message, options = {}) => {
     options.chain = "DEV";
-    var productData = await rpcSendAbi(this.wallet, mailAddress, "eth_call", payDataAbi, [receiver]);
+    var productData = await rpcSendAbi(this.wallet, mailAddress, "eth_call", payDataAbi, [receiver], options);
     if(productData.currency == "0x0000000000000000000000000000000000000000"){
       options.value = productData.price;
-      return await rpcSendAbi(this.wallet, mailAddress, "eth_transfer", payAbi, [user, productID, message]);
+      return await rpcSendAbi(this.wallet, mailAddress, "eth_transfer", payAbi, [user, productID, message], options);
     }
     else {
       //APPROVE CONTRACT ERC20
-      return await rpcSendAbi(this.wallet, mailAddress, "eth_transfer", payAbi, [user, productID, message]);
+      return await rpcSendAbi(this.wallet, mailAddress, "eth_transfer", payAbi, [user, productID, message], options);
     }
   }
 
@@ -5330,7 +5332,7 @@ class Pyre {
   }
 
   send = async (address, amount, chain = null) => { //opts can include chain variable
-    await rpcSend(this.wallet, "eth_sendTransaction", {to: address, from: this.wallet.defaultAccount, value: amount, chain: chain});
+    await rpcSend(this.wallet, "eth_sendTransaction", {to: address, from: this.wallet.defaultAccount, value: amount}, chain);
   }
 
 

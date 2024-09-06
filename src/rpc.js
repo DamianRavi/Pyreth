@@ -2,20 +2,21 @@ import {decodeParameter, decodeParameters, encodeFunctionCall, encodeParameter} 
 import { padLeft } from './string.js'
 import { uuidV4 } from "./modules/utils/index.js"
 
-export const rpcSend = async (wallet, method, args = []) => { //blockNumber = "latest"
+export const rpcSend = async (wallet, method, args = [], chain = null) => { //blockNumber = "latest"
   var rawResponse = await fetch(wallet.provider.provider, { method: "POST", headers: {'Accept': 'application/json', 'Content-Type': 'application/json'},
     body: JSON.stringify({
       id: uuidV4(),
       jsonrpc: "2.0",
       method: method,
-      params: args
+      params: args,
+      ...(chain && {chain: chain})
     })
   })
   var content = await rawResponse?.json();
   return content ? content : {err: "RPC Not Active"}
 }
 
-export const rpcSendAbi = async (wallet, address, method, abi, args) => {
+export const rpcSendAbi = async (wallet, address, method, abi, args, chain = null) => {
   /*
   from: DATA, 20 Bytes - The address the transaction is sent from.
   to: DATA, 20 Bytes - (optional when creating new contract) The address the transaction is directed to.
@@ -73,7 +74,8 @@ export const rpcSendAbi = async (wallet, address, method, abi, args) => {
       method: method,
       abiData: abi,
       inputs: args,
-      params: [{to: address, from: wallet.defaultAccount, value: "0", ...options, input: data}, "latest"]
+      params: [{to: address, from: wallet.defaultAccount, value: "0", ...options, input: data}, "latest"],
+      ...(chain && {chain: chain})
     })
   }).catch((err) => {
     console.log(err)
