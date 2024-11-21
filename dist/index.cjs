@@ -5332,7 +5332,8 @@ class Pyre {
   }
 
   send = async (address, amount, chain = null) => { //opts can include chain variable
-    await rpcSend(this.wallet, "eth_sendTransaction", {to: address, from: this.wallet.defaultAccount, value: amount}, chain);
+    var res = await rpcSend(this.wallet, "eth_sendTransaction", {to: address, from: this.wallet.defaultAccount, value: amount}, chain);
+    return(res)
   }
 
 
@@ -5352,6 +5353,11 @@ class Pyre {
 
   quote = (provider, options) => {
     //call quote function from Uniswap
+  }
+
+  addAddress = async (address) => {
+    var res = await rpcSend(this.wallet, "eth_addAddressBook", {address: address});
+    return(res)
   }
 
   Contract = class {
