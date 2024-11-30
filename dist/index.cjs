@@ -4178,12 +4178,18 @@ function calculateSigRecovery(v, chainId) {
  * @returns Recovered public key
  */
 const ecrecover = function ( msgHash, v, r, s, chainId ) {
+  v = Number(v);
+  
+  if(chainId){
+    chainId = Number(chainId);
+  }
+
 	const recovery = calculateSigRecovery(v, chainId);
 	if (recovery.toString() != "0" && recovery.toString() != "1") {
 		throw new Error('Invalid signature v value');
 	}
 	const senderPubKey = new secp256k1.secp256k1.Signature(uint8ArrayToBigInt(r), uint8ArrayToBigInt(s)).addRecoveryBit(Number(recovery)).recoverPublicKey(bytesToHex$1(msgHash).replace("0x", "")).toRawBytes(false);
-	return Buffer.from(senderPubKey).toString('hex');
+	return "0x" + Buffer.from(senderPubKey.slice(1)).toString('hex');
 };
 
 /**********************************************************/
@@ -4198,7 +4204,7 @@ const privateKeyToAccount = (privateKey, ignoreLength) => {
 
   return {
     address: privateKeyToAddress(privateKeyUint8Array),
-    ss58Address: createSS58(privateKeyToPublicKey(privateKey)),
+    ss58Address: createSS58(privateKeyToPublicKey(privateKey, true)),
     privateKey: bytesToHex$1(privateKeyUint8Array),
     publicKey: privateKeyToPublicKey(privateKey, false),
     signTransaction: (_tx) => {
@@ -4219,7 +4225,7 @@ const privateKeyToAddress = (privateKey) => {
   return toChecksumAddress(`0x${address}`);
 };
 
-const privateKeyToPublicKey = (privateKey, isCompressed) => {
+const privateKeyToPublicKey = (privateKey, isCompressed = false) => {
   const privateKeyUint8Array = parseAndValidatePrivateKey(privateKey);
   return `0x${bytesToHex$1(secp256k1.secp256k1.getPublicKey(privateKeyUint8Array, isCompressed)).slice(4)}`; // 0x and removing compression byte
 };
