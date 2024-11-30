@@ -1,11 +1,9 @@
 import crypto from "crypto-js";
 import { randomBytes } from "@noble/hashes/utils";
-//import * as secp256k1 from '@noble/secp256k1'
 import { secp256k1 } from '@noble/curves/secp256k1'
 import { sha512 } from '@noble/hashes/sha512'
 import { Buffer } from 'buffer';
 import { hexToUint8Array } from '../converter.js'
-import { decrypt as createDecipheriv, encrypt as createCipheriv } from './aes.js';
 
 const EC_GROUP_ORDER = Buffer.from('fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141', 'hex');
 const ZERO32 = Buffer.alloc(32, 0);
@@ -40,26 +38,20 @@ function isValidPrivateKey(privateKey) {
   privateKey.compare(EC_GROUP_ORDER) < 0; // < G
 }
 
-function hmacSha256(key, msg) {
-  return crypto.createHmac("sha256", key).update(msg).digest();
-}
-/*
-function sha512(msg) {
-  return crypto.createHash("sha512").update(msg).digest();
-}*/
-
 function aes256CbcEncrypt(iv, key, plaintext) {
-  var cipher = crypto.createCipheriv("aes-256-cbc", key, iv);
-  var firstChunk = cipher.update(plaintext);
-  var secondChunk = cipher.final();
-  return Buffer.concat([firstChunk, secondChunk]);
+  key = crypto.enc.Hex.parse(key.toString('hex'));
+  iv = crypto.enc.Hex.parse(iv.toString('hex'));
+
+  var encrypted = crypto.AES.encrypt(plaintext, key, { mode: crypto.mode.CBC, iv: iv }); //, padding: crypto.pad.Pkcs7
+  return encrypted.ciphertext.toString(crypto.enc.Base64)
 }
 
 function aes256CbcDecrypt(iv, key, ciphertext) {
-  var cipher = crypto.createDecipheriv("aes-256-cbc", key, iv);
-  var firstChunk = cipher.update(ciphertext);
-  var secondChunk = cipher.final();
-  return Buffer.concat([firstChunk, secondChunk]);
+  key = crypto.enc.Hex.parse(key.toString('hex'));
+  iv = crypto.enc.Hex.parse(iv.toString('hex'));
+
+  var decrypted = crypto.AES.decrypt(ciphertext, key, { mode: crypto.mode.CBC, iv: iv }).toString(crypto.enc.Utf8)
+  return decrypted;
 }
 
 function uint8ArrayToHexString(uint8Array) {
@@ -72,66 +64,74 @@ function uint8ArrayToHexString(uint8Array) {
 }
 
 function getPublic(privateKey) {
-  //assert(privateKey.length === 32, "Bad private key");
-  //assert(isValidPrivateKey(privateKey), "Bad private key");
-  //var compressed = secp256k1.publicKeyCreate(privateKey);
   return secp256k1.getPublicKey(privateKey, false);
 };
 
 const derive = (privateKeyA, publicKeyB) => {
   return new Promise(function(resolve) {
-    //assert(privateKeyA.length === 32, "Bad private key");
-    //assert(isValidPrivateKey(privateKeyA), "Bad private key");
-    //resolve(ecdh.derive(privateKeyA, publicKeyB));
     resolve(secp256k1.getSharedSecret(privateKeyA, publicKeyB))
   });
 };
 
 export const encrypt = (publicKeyTo, msg, opts) => {
   opts = opts || {};
-  // Tmp variable to save context from flat promises;
+
   var ephemPublicKey;
   return new Promise(function(resolve) {
-    //secp256k1.getPublicKey(secp256k1.utils.randomPrivateKey())
     var ephemPrivateKey = opts.ephemPrivateKey || secp256k1.utils.randomPrivateKey()//Buffer.from(randomBytes(32));
     if(publicKeyTo?.constructor?.name !== 'Uint8Array'){
       if(publicKeyTo.substr(0, 2) == "0x"){
         publicKeyTo = publicKeyTo.slice(2)
       }
-      publicKeyTo = hexToUint8Array(publicKeyTo)
     }
-
     /*
     if(!isValidPrivateKey(ephemPrivateKey)){
-      console.log("INVALID KEY")
       return "INVALID KEY"
     }
     while(!isValidPrivateKey(ephemPrivateKey)) {
       ephemPrivateKey = opts.ephemPrivateKey || secp256k1.utils.randomPrivateKey()//Buffer.from(randomBytes(32));
     }*/
+
     ephemPublicKey = getPublic(ephemPrivateKey);
-    resolve(derive(ephemPrivateKey, publicKeyTo));
+
+    var bufferKey = Buffer.from(publicKeyTo, "hex")
+    if(bufferKey.length < 65){
+      var prefix = Buffer.from([0x04])
+      bufferKey = Buffer.concat([prefix, bufferKey]);
+    }
+
+    resolve(derive(ephemPrivateKey, bufferKey));
   }).then(function(Px) {
     var hash = sha512(Px);
     var iv = opts.iv || Buffer.from(randomBytes(16));
-    var encryptionKey = hash.slice(0, 32);
-    var macKey = hash.slice(32);
+    var encryptionKey = Buffer.from(hash.slice(0, 32));
+    var macKey = crypto.enc.Utf8.parse(Buffer.from(hash.slice(32))); //to hex
+
     var ciphertext = aes256CbcEncrypt(iv, encryptionKey, msg);
-    var dataToMac = Buffer.concat([iv, ephemPublicKey, ciphertext]);
-    let mac = hmacSha256(macKey, dataToMac);
-    return { iv: iv, ephemPublicKey: ephemPublicKey, ciphertext: ciphertext, mac: mac };
+    iv = Buffer.from(iv)
+
+    var dataToMac = Buffer.concat([ iv, ephemPublicKey, Buffer.from(ciphertext, 'base64') ]);
+    let mac = crypto.HmacSHA256(dataToMac, macKey).toString(crypto.enc.Base64)
+    return { iv: iv.toString("base64"), ephemPublicKey: Buffer.from(ephemPublicKey).toString('base64'), ciphertext: ciphertext, mac: mac };
   });
 };
 
 export const decrypt = (privateKey, opts) => {
   privateKey = privateKey.substr(-64)
-  return derive(privateKey, opts.ephemPublicKey).then(function(Px) {
+
+  var ciphertext = opts.ciphertext;
+  opts.iv = Buffer.from(opts.iv, 'base64');
+  opts.ephemPublicKey = Buffer.from(opts.ephemPublicKey, 'base64');
+  opts.ciphertext = Buffer.from(opts.ciphertext, 'base64');
+
+  return derive(privateKey, Buffer.from(opts.ephemPublicKey).toString("hex")).then(function(Px) {
     assert(privateKey.length === 64, "Bad private key");
     var hash = sha512(Px);
-    var encryptionKey = hash.slice(0, 32);
-    var macKey = hash.slice(32);
-    var dataToMac = Buffer.concat([ opts.iv, opts.ephemPublicKey, opts.ciphertext]);
-    var realMac = hmacSha256(macKey, dataToMac);
-    assert(equalConstTime(opts.mac, realMac), "Bad MAC"); return aes256CbcDecrypt(opts.iv, encryptionKey, opts.ciphertext).toString();
+    var encryptionKey = Buffer.from(hash.slice(0, 32));
+    var macKey = crypto.enc.Utf8.parse(Buffer.from(hash.slice(32))); //to hex
+    var dataToMac = Buffer.concat([opts.iv, opts.ephemPublicKey, opts.ciphertext]);
+    var realMac = crypto.HmacSHA256(dataToMac, macKey).toString(crypto.enc.Base64);
+    assert(equalConstTime(opts.mac, realMac), "Bad MAC");
+    return aes256CbcDecrypt(opts.iv, encryptionKey, ciphertext).toString();
   });
 };

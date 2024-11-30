@@ -5108,89 +5108,91 @@ function equalConstTime(b1, b2) {
   return res === 0;
 }
 
-function hmacSha256(key, msg) {
-  return crypto.createHmac("sha256", key).update(msg).digest();
-}
-/*
-function sha512(msg) {
-  return crypto.createHash("sha512").update(msg).digest();
-}*/
-
 function aes256CbcEncrypt(iv, key, plaintext) {
-  var cipher = crypto.createCipheriv("aes-256-cbc", key, iv);
-  var firstChunk = cipher.update(plaintext);
-  var secondChunk = cipher.final();
-  return buffer.Buffer.concat([firstChunk, secondChunk]);
+  key = crypto.enc.Hex.parse(key.toString('hex'));
+  iv = crypto.enc.Hex.parse(iv.toString('hex'));
+
+  var encrypted = crypto.AES.encrypt(plaintext, key, { mode: crypto.mode.CBC, iv: iv }); //, padding: crypto.pad.Pkcs7
+  return encrypted.ciphertext.toString(crypto.enc.Base64)
 }
 
 function aes256CbcDecrypt(iv, key, ciphertext) {
-  var cipher = crypto.createDecipheriv("aes-256-cbc", key, iv);
-  var firstChunk = cipher.update(ciphertext);
-  var secondChunk = cipher.final();
-  return buffer.Buffer.concat([firstChunk, secondChunk]);
+  key = crypto.enc.Hex.parse(key.toString('hex'));
+  iv = crypto.enc.Hex.parse(iv.toString('hex'));
+
+  var decrypted = crypto.AES.decrypt(ciphertext, key, { mode: crypto.mode.CBC, iv: iv }).toString(crypto.enc.Utf8);
+  return decrypted;
 }
 
 function getPublic(privateKey) {
-  //assert(privateKey.length === 32, "Bad private key");
-  //assert(isValidPrivateKey(privateKey), "Bad private key");
-  //var compressed = secp256k1.publicKeyCreate(privateKey);
   return secp256k1.secp256k1.getPublicKey(privateKey, false);
 }
 const derive = (privateKeyA, publicKeyB) => {
   return new Promise(function(resolve) {
-    //assert(privateKeyA.length === 32, "Bad private key");
-    //assert(isValidPrivateKey(privateKeyA), "Bad private key");
-    //resolve(ecdh.derive(privateKeyA, publicKeyB));
     resolve(secp256k1.secp256k1.getSharedSecret(privateKeyA, publicKeyB));
   });
 };
 
 const encrypt = (publicKeyTo, msg, opts) => {
   opts = opts || {};
-  // Tmp variable to save context from flat promises;
+
   var ephemPublicKey;
   return new Promise(function(resolve) {
-    //secp256k1.getPublicKey(secp256k1.utils.randomPrivateKey())
     var ephemPrivateKey = opts.ephemPrivateKey || secp256k1.secp256k1.utils.randomPrivateKey();//Buffer.from(randomBytes(32));
     if(publicKeyTo?.constructor?.name !== 'Uint8Array'){
       if(publicKeyTo.substr(0, 2) == "0x"){
         publicKeyTo = publicKeyTo.slice(2);
       }
-      publicKeyTo = hexToUint8Array(publicKeyTo);
     }
-
     /*
     if(!isValidPrivateKey(ephemPrivateKey)){
-      console.log("INVALID KEY")
       return "INVALID KEY"
     }
     while(!isValidPrivateKey(ephemPrivateKey)) {
       ephemPrivateKey = opts.ephemPrivateKey || secp256k1.utils.randomPrivateKey()//Buffer.from(randomBytes(32));
     }*/
+
     ephemPublicKey = getPublic(ephemPrivateKey);
-    resolve(derive(ephemPrivateKey, publicKeyTo));
+
+    var bufferKey = buffer.Buffer.from(publicKeyTo, "hex");
+    if(bufferKey.length < 65){
+      var prefix = buffer.Buffer.from([0x04]);
+      bufferKey = buffer.Buffer.concat([prefix, bufferKey]);
+    }
+
+    resolve(derive(ephemPrivateKey, bufferKey));
   }).then(function(Px) {
     var hash = sha512.sha512(Px);
     var iv = opts.iv || buffer.Buffer.from(utils.randomBytes(16));
-    var encryptionKey = hash.slice(0, 32);
-    var macKey = hash.slice(32);
+    var encryptionKey = buffer.Buffer.from(hash.slice(0, 32));
+    var macKey = crypto.enc.Utf8.parse(buffer.Buffer.from(hash.slice(32))); //to hex
+
     var ciphertext = aes256CbcEncrypt(iv, encryptionKey, msg);
-    var dataToMac = buffer.Buffer.concat([iv, ephemPublicKey, ciphertext]);
-    let mac = hmacSha256(macKey, dataToMac);
-    return { iv: iv, ephemPublicKey: ephemPublicKey, ciphertext: ciphertext, mac: mac };
+    iv = buffer.Buffer.from(iv);
+
+    var dataToMac = buffer.Buffer.concat([ iv, ephemPublicKey, buffer.Buffer.from(ciphertext, 'base64') ]);
+    let mac = crypto.HmacSHA256(dataToMac, macKey).toString(crypto.enc.Base64);
+    return { iv: iv.toString("base64"), ephemPublicKey: buffer.Buffer.from(ephemPublicKey).toString('base64'), ciphertext: ciphertext, mac: mac };
   });
 };
 
 const decrypt = (privateKey, opts) => {
   privateKey = privateKey.substr(-64);
-  return derive(privateKey, opts.ephemPublicKey).then(function(Px) {
+
+  var ciphertext = opts.ciphertext;
+  opts.iv = buffer.Buffer.from(opts.iv, 'base64');
+  opts.ephemPublicKey = buffer.Buffer.from(opts.ephemPublicKey, 'base64');
+  opts.ciphertext = buffer.Buffer.from(opts.ciphertext, 'base64');
+
+  return derive(privateKey, buffer.Buffer.from(opts.ephemPublicKey).toString("hex")).then(function(Px) {
     assert(privateKey.length === 64, "Bad private key");
     var hash = sha512.sha512(Px);
-    var encryptionKey = hash.slice(0, 32);
-    var macKey = hash.slice(32);
-    var dataToMac = buffer.Buffer.concat([ opts.iv, opts.ephemPublicKey, opts.ciphertext]);
-    var realMac = hmacSha256(macKey, dataToMac);
-    assert(equalConstTime(opts.mac, realMac), "Bad MAC"); return aes256CbcDecrypt(opts.iv, encryptionKey, opts.ciphertext).toString();
+    var encryptionKey = buffer.Buffer.from(hash.slice(0, 32));
+    var macKey = crypto.enc.Utf8.parse(buffer.Buffer.from(hash.slice(32))); //to hex
+    var dataToMac = buffer.Buffer.concat([opts.iv, opts.ephemPublicKey, opts.ciphertext]);
+    var realMac = crypto.HmacSHA256(dataToMac, macKey).toString(crypto.enc.Base64);
+    assert(equalConstTime(opts.mac, realMac), "Bad MAC");
+    return aes256CbcDecrypt(opts.iv, encryptionKey, ciphertext).toString();
   });
 };
 
