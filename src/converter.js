@@ -10,6 +10,50 @@ export { utf8ToBytes }
 const WORD_SIZE = 32;
 const mask = BigInt(1) << BigInt(256);
 
+BigInt.prototype.toWei = function(unit = "ether"){
+  var val = toWei(this, unit);
+  return val.toString();
+}
+
+BigInt.prototype.fromWei = function(unit = "ether"){
+  var val = fromWei(this, unit);
+  return val.toString();
+}
+
+BigInt.prototype.add = function(val){
+  val = BigInt(val) + this;
+  return val.toString();
+}
+
+BigInt.prototype.sub = function(val){
+  val = BigInt(val) - this;
+  return val.toString();
+}
+
+BigInt.prototype.toHex = function(unit = "ether"){
+  return this.toString(16)
+}
+
+String.prototype.toWei = function(unit = "ether"){
+  var val = toWei(this, unit);
+  return val.toString();
+}
+
+String.prototype.fromWei = function(unit = "ether"){
+  var val = fromWei(this, unit);
+  return val.toString();
+}
+
+String.prototype.add = function(val){
+  val = BigInt(val) + BigInt(this);
+  return val.toString();
+}
+
+String.prototype.sub = function(val){
+  val = BigInt(val) - BigInt(this);
+  return val.toString();
+}
+
 function charCodeToBase16(char) {
   if (char >= charCodeMap.zero && char <= charCodeMap.nine)
     return char - charCodeMap.zero

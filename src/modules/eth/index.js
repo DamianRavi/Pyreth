@@ -171,9 +171,9 @@ export class Eth {
     return rpcSend(this.wallet, "eth_getCode", [address, blockNumber])
   }
 
-  getBlock = (block, txDetails) => {
+  getBlock = async (block, txDetails) => {
     if(isNaN(Number(block))){
-      return rpcSend(this.wallet, "eth_getBlockByHash", [block, txDetails])
+      return (await rpcSend(this.wallet, "eth_getBlockByHash", [block.toString("hex"), txDetails])).result
     }
     else{
       return rpcSend(this.wallet, "eth_getBlockByNumber", [block, txDetails])
@@ -208,6 +208,9 @@ export class Eth {
   }
 
   getTransaction = (hash) => {
+    if(typeof hash == "string"){
+      hash = [hash]
+    }
     return rpcSend(this.wallet, "eth_getTransactionByHash", hash)
   }
 

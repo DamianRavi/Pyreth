@@ -873,6 +873,50 @@ const isBytes$1 = (value, options) => {
 const WORD_SIZE$1 = 32;
 const mask = BigInt(1) << BigInt(256);
 
+BigInt.prototype.toWei = function(unit = "ether"){
+  var val = toWei(this, unit);
+  return val.toString();
+};
+
+BigInt.prototype.fromWei = function(unit = "ether"){
+  var val = fromWei(this, unit);
+  return val.toString();
+};
+
+BigInt.prototype.add = function(val){
+  val = BigInt(val) + this;
+  return val.toString();
+};
+
+BigInt.prototype.sub = function(val){
+  val = BigInt(val) - this;
+  return val.toString();
+};
+
+BigInt.prototype.toHex = function(unit = "ether"){
+  return this.toString(16)
+};
+
+String.prototype.toWei = function(unit = "ether"){
+  var val = toWei(this, unit);
+  return val.toString();
+};
+
+String.prototype.fromWei = function(unit = "ether"){
+  var val = fromWei(this, unit);
+  return val.toString();
+};
+
+String.prototype.add = function(val){
+  val = BigInt(val) + BigInt(this);
+  return val.toString();
+};
+
+String.prototype.sub = function(val){
+  val = BigInt(val) - BigInt(this);
+  return val.toString();
+};
+
 function charCodeToBase16(char) {
   if (char >= charCodeMap.zero && char <= charCodeMap.nine)
     return char - charCodeMap.zero
@@ -4451,37 +4495,14 @@ const signTransaction = (transaction, privateKey) => {
   };
 };
 
-const format = () => "1";
+const format = () => "NOT IMPLEMENTED";
 
-const keccak256Wrapper = () => "1";
+const keccak256Wrapper = () => "NOT IMPLEMENTED";
 
-const mergeDeep = () => "1";
-
-
-
-/*
-export const hexToBytes = (hex) => {
-  let bytes = [];
-  for (let c = 0; c < hex.length; c += 2)
-      bytes.push(parseInt(hex.substr(c, 2), 16));
-  return bytes;
-}
-
-//export bytesToHex;
-/*
-export const bytesToHex = (value) => {
-  let hex = [];
-  for (let i = 0; i < bytes.length; i++) {
-      let current = bytes[i] < 0 ? bytes[i] + 256 : bytes[i];
-      hex.push((current >>> 4).toString(16));
-      hex.push((current & 0xF).toString(16));
-  }
-  return hex.join("");
-}*/
+const mergeDeep = () => "NOT IMPLEMENTED";
 
 const fromDecimal = (value) => toHex$1(value);
 const fromUtf8 = (value) => utf8ToHex(value);
-//const numberToHex = (value) => toHex(value)
 const stringToHex = (value) => toHex$1(value);
 
 var Utils = /*#__PURE__*/Object.freeze({
@@ -4873,9 +4894,9 @@ class Eth {
     return rpcSend(this.wallet, "eth_getCode", [address, blockNumber])
   }
 
-  getBlock = (block, txDetails) => {
+  getBlock = async (block, txDetails) => {
     if(isNaN(Number(block))){
-      return rpcSend(this.wallet, "eth_getBlockByHash", [block, txDetails])
+      return (await rpcSend(this.wallet, "eth_getBlockByHash", [block.toString("hex"), txDetails])).result
     }
     else {
       return rpcSend(this.wallet, "eth_getBlockByNumber", [block, txDetails])
@@ -4910,6 +4931,9 @@ class Eth {
   }
 
   getTransaction = (hash) => {
+    if(typeof hash == "string"){
+      hash = [hash];
+    }
     return rpcSend(this.wallet, "eth_getTransactionByHash", hash)
   }
 

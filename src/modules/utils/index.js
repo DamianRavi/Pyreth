@@ -10,37 +10,14 @@ import { encodePacked } from '../../hashes/solidityPack.js';
 import { sha3, sha3Raw, soliditySha3, soliditySha3Raw  } from '../../hashes.js'
 import { uuidV4, randomHex, checkAddressCheckSum, ecrecover } from '../../encoders.js'
 
-const format = () => "1"
+const format = () => "NOT IMPLEMENTED"
 
-const keccak256Wrapper = () => "1"
+const keccak256Wrapper = () => "NOT IMPLEMENTED"
 
-const mergeDeep = () => "1"
-
-
-
-/*
-export const hexToBytes = (hex) => {
-  let bytes = [];
-  for (let c = 0; c < hex.length; c += 2)
-      bytes.push(parseInt(hex.substr(c, 2), 16));
-  return bytes;
-}
-
-//export bytesToHex;
-/*
-export const bytesToHex = (value) => {
-  let hex = [];
-  for (let i = 0; i < bytes.length; i++) {
-      let current = bytes[i] < 0 ? bytes[i] + 256 : bytes[i];
-      hex.push((current >>> 4).toString(16));
-      hex.push((current & 0xF).toString(16));
-  }
-  return hex.join("");
-}*/
+const mergeDeep = () => "NOT IMPLEMENTED"
 
 const fromDecimal = (value) => toHex(value)
 const fromUtf8 = (value) => utf8ToHex(value)
-//const numberToHex = (value) => toHex(value)
 const stringToHex = (value) => toHex(value)
 
 export {
